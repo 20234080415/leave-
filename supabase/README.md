@@ -5,6 +5,7 @@
    - `202606130001_initial_auth_and_spaces.sql`
    - `202606130002_invite_codes_and_space_rpcs.sql`
    - `202606130003_daily_records_and_storage.sql`
+   - `202606130004_daily_questions.sql`
 3. 在 **Authentication > URL Configuration** 中设置：
    - Site URL：`http://localhost:3000`
    - Redirect URL：`http://localhost:3000/auth/callback`
@@ -31,3 +32,11 @@ with check (public.is_space_member(space_id))
 ```text
 space_id/user_id/random-file-name.ext
 ```
+
+问题答案图片复用同一桶，路径使用：
+
+```text
+space_id/user_id/questions/random-file-name.ext
+```
+
+`question_answers` 的 SELECT RLS 只有在同一空间、同一题目已有两位用户回答后才返回内容；等待阶段仅通过 `get_question_answer_status` RPC 返回布尔值与人数。
