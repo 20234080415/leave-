@@ -60,13 +60,12 @@ npm run dev
 ```
 
 在 `.env.local` 中填写 Supabase 项目 URL 和 anon/publishable key，并在
-Supabase SQL Editor 中执行
-[`supabase/migrations/202606130001_initial_auth_and_spaces.sql`](./supabase/migrations/202606130001_initial_auth_and_spaces.sql)。
+Supabase SQL Editor 中按文件名顺序执行
+[`supabase/migrations`](./supabase/migrations) 中的 SQL。
 
 Fill `.env.local` with your Supabase project URL and anon/publishable key, then
-run
-[`supabase/migrations/202606130001_initial_auth_and_spaces.sql`](./supabase/migrations/202606130001_initial_auth_and_spaces.sql)
-in the Supabase SQL Editor.
+run the SQL files in [`supabase/migrations`](./supabase/migrations) in filename
+order from the Supabase SQL Editor.
 
 打开 [http://localhost:3000](http://localhost:3000)。
 
@@ -95,8 +94,8 @@ npm run lint   # 运行代码检查 / Run lint checks
 
 ## 项目状态 / Project Status
 
-项目正在按阶段开发。目前已完成项目骨架、五页静态 UI、Supabase 数据库基础和邮箱认证。创建/加入双人空间与业务数据持久化将在后续阶段完成。
+项目正在按阶段开发。目前已完成项目骨架、五页静态 UI、邮箱认证，以及双人空间的创建、邀请码加入和成员权限基础。业务数据持久化将在后续阶段完成。
 
 The project is being developed in stages. The foundation, five-page static UI,
-Supabase database schema, and email authentication are complete. Creating or
-joining a shared space and persisting product data will follow.
+email authentication, and two-person space creation/joining are complete.
+Persisting product data will follow.

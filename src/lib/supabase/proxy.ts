@@ -47,6 +47,18 @@ export async function updateSession(request: NextRequest) {
     return redirectWithCookies(request, response, "/onboarding");
   }
 
+  if (claims?.sub && !isPublicPath && pathname !== "/onboarding") {
+    const { data: membership, error } = await supabase
+      .from("space_members")
+      .select("space_id")
+      .eq("user_id", claims.sub)
+      .maybeSingle();
+
+    if (!error && !membership) {
+      return redirectWithCookies(request, response, "/onboarding");
+    }
+  }
+
   return response;
 }
 

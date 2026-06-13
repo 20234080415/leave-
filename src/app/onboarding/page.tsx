@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { SpaceOnboarding } from "@/components/space-onboarding";
 import { SoftCard } from "@/components/soft-card";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
@@ -52,58 +53,7 @@ export default async function OnboardingPage() {
         </p>
       </header>
 
-      <section className="grid gap-4">
-        <SoftCard className="relative overflow-hidden bg-[#fff8f6]">
-          <span className="absolute -right-4 -top-6 text-8xl text-[#f3ded9]/60">
-            +
-          </span>
-          <div className="relative">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#f4dfdc] text-xl text-rose-deep">
-              ♡
-            </span>
-            <h2 className="mt-5 text-xl font-medium text-ink">创建一个空间</h2>
-            <p className="mt-2 text-sm leading-6 text-ink-muted">
-              生成专属邀请码，再把它轻轻交给对方。
-            </p>
-            <button
-              type="button"
-              className="soft-button mt-6 w-full opacity-70"
-              disabled
-            >
-              下一阶段开放
-            </button>
-          </div>
-        </SoftCard>
-
-        <SoftCard>
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#f2ece6] text-xl text-[#9d8178]">
-            #
-          </span>
-          <h2 className="mt-5 text-xl font-medium text-ink">加入对方的空间</h2>
-          <p className="mt-2 text-sm leading-6 text-ink-muted">
-            输入 6 位邀请码，找到对方已经准备好的位置。
-          </p>
-          <div className="mt-6 flex gap-2">
-            <input
-              aria-label="空间邀请码"
-              className="text-field min-w-0 flex-1 uppercase tracking-[0.2em]"
-              placeholder="LEAVE6"
-              maxLength={6}
-              disabled
-            />
-            <button
-              type="button"
-              className="rounded-2xl bg-[#e6d8d3] px-4 text-sm text-white"
-              disabled
-            >
-              加入
-            </button>
-          </div>
-          <p className="mt-3 text-xs text-ink-faint">
-            创建与加入逻辑将在第 4 阶段接入。
-          </p>
-        </SoftCard>
-      </section>
+      <SpaceOnboarding />
 
       <form action={signOut} className="mt-7 text-center">
         <button type="submit" className="text-sm text-ink-faint">
