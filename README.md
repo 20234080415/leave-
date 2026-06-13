@@ -55,8 +55,18 @@ Requirement: Node.js 20 or later.
 
 ```bash
 npm install
+cp .env.example .env.local
 npm run dev
 ```
+
+在 `.env.local` 中填写 Supabase 项目 URL 和 anon/publishable key，并在
+Supabase SQL Editor 中执行
+[`supabase/migrations/202606130001_initial_auth_and_spaces.sql`](./supabase/migrations/202606130001_initial_auth_and_spaces.sql)。
+
+Fill `.env.local` with your Supabase project URL and anon/publishable key, then
+run
+[`supabase/migrations/202606130001_initial_auth_and_spaces.sql`](./supabase/migrations/202606130001_initial_auth_and_spaces.sql)
+in the Supabase SQL Editor.
 
 打开 [http://localhost:3000](http://localhost:3000)。
 
@@ -80,9 +90,13 @@ npm run lint   # 运行代码检查 / Run lint checks
 | 问题 Questions | `/questions` |
 | 愿望 Wishes | `/wishes` |
 | 我们 Us | `/us` |
+| 登录与注册 Auth | `/auth` |
+| 空间引导 Space setup | `/onboarding` |
 
 ## 项目状态 / Project Status
 
-项目正在按阶段开发。目前已完成项目骨架和五页静态 UI，后续将接入 Supabase Auth、双人空间与数据持久化。
+项目正在按阶段开发。目前已完成项目骨架、五页静态 UI、Supabase 数据库基础和邮箱认证。创建/加入双人空间与业务数据持久化将在后续阶段完成。
 
-The project is being developed in stages. The project foundation and five-page static UI are complete. Supabase Auth, shared spaces, and data persistence will follow.
+The project is being developed in stages. The foundation, five-page static UI,
+Supabase database schema, and email authentication are complete. Creating or
+joining a shared space and persisting product data will follow.

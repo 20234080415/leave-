@@ -17,6 +17,10 @@ const navItems = [
 export function BottomNav() {
   const pathname = usePathname();
 
+  if (pathname.startsWith("/auth") || pathname.startsWith("/onboarding")) {
+    return null;
+  }
+
   return (
     <nav className="bottom-nav" aria-label="主要导航">
       <div className="bottom-nav__inner">
