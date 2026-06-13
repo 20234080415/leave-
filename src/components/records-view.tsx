@@ -92,10 +92,19 @@ export function RecordsView({
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#f6e6e3] text-2xl text-rose-deep">
             ✎
           </div>
-          <h2 className="mt-4 text-lg font-medium text-ink">还没有故事呢</h2>
+          <h2 className="mt-4 text-lg font-medium text-ink">
+            还没有故事呢，写下今天吧
+          </h2>
           <p className="mt-2 text-sm text-ink-muted">
-            想写的时候，再轻轻留下一点。
+            不必写很多，一句话也能留住此刻。
           </p>
+          <button
+            type="button"
+            className="soft-button mt-6"
+            onClick={() => setComposerOpen(true)}
+          >
+            写下今天
+          </button>
         </SoftCard>
       )}
 
