@@ -6,6 +6,7 @@
    - `202606130002_invite_codes_and_space_rpcs.sql`
    - `202606130003_daily_records_and_storage.sql`
    - `202606130004_daily_questions.sql`
+   - `202606130005_wishes_and_steps.sql`
 3. 在 **Authentication > URL Configuration** 中设置：
    - Site URL：`http://localhost:3000`
    - Redirect URL：`http://localhost:3000/auth/callback`
@@ -40,3 +41,6 @@ space_id/user_id/questions/random-file-name.ext
 ```
 
 `question_answers` 的 SELECT RLS 只有在同一空间、同一题目已有两位用户回答后才返回内容；等待阶段仅通过 `get_question_answer_status` RPC 返回布尔值与人数。
+
+`wishes` 直接通过 `space_id` 校验成员关系，`wish_steps` 则通过
+`can_access_wish(wish_id)` 追溯所属愿望的 `space_id`，因此步骤表不需要重复保存空间字段。

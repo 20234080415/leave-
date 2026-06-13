@@ -20,10 +20,10 @@ Leave is a low-pressure shared journal designed for two people. Instead of encou
 - **我们 / Us**：展示双方资料、纪念日倒计时和空间邀请码。<br>
   View both profiles, an anniversary countdown, and the shared-space invite code.
 
-当前版本的认证、双人空间、每日记录和今日问题已接入 Supabase；愿望等模块仍使用 mock 数据。
+当前版本的认证、双人空间、每日记录、今日问题和愿望清单均已接入 Supabase。
 
 Authentication, two-person spaces, daily records, and daily questions now use
-Supabase. Wishes and some other modules still use mock data.
+Supabase. The shared wish list is connected as well.
 
 ## 设计原则 / Product Principles
 
@@ -95,9 +95,10 @@ npm run lint   # 运行代码检查 / Run lint checks
 
 ## 项目状态 / Project Status
 
-项目正在按阶段开发。目前已完成项目骨架、五页 UI、邮箱认证、双人空间、每日记录、私有图片上传和双方回答后揭晓的今日问题。其他业务数据持久化将在后续阶段完成。
+项目正在按阶段开发。目前已完成项目骨架、五页 UI、邮箱认证、双人空间、每日记录、私有图片上传、双方回答后揭晓的今日问题，以及带步骤进度的愿望清单。
 
 The project is being developed in stages. The foundation, five-page static UI,
 email authentication, and two-person space creation/joining are complete.
 Daily records, private image uploads, and simultaneously revealed daily
-questions are also connected to Supabase. Other product data will follow.
+questions are also connected to Supabase, together with wishes and checklist
+steps.
