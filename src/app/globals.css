@@ -42,6 +42,12 @@ button {
   cursor: pointer;
 }
 
+input,
+textarea,
+button {
+  font: inherit;
+}
+
 .app-shell {
   min-height: 100vh;
   background:
@@ -76,6 +82,115 @@ button {
   color: var(--rose-deep);
   font-size: 12px;
   letter-spacing: 0.08em;
+}
+
+.soft-button {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: var(--rose-deep);
+  padding: 0 18px;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 8px 20px rgb(169 104 101 / 20%);
+}
+
+.choice-chip {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #eadedb;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 65%);
+  padding: 0 14px;
+  color: var(--muted);
+  font-size: 13px;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.choice-chip[data-selected="true"] {
+  border-color: #deb0ab;
+  background: #f7e5e2;
+  color: var(--rose-deep);
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--foreground);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.text-field {
+  width: 100%;
+  border: 1px solid #eadfdb;
+  border-radius: 18px;
+  background: rgb(255 255 255 / 65%);
+  padding: 13px 15px;
+  color: var(--foreground);
+  outline: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.text-field::placeholder {
+  color: var(--faint);
+}
+
+.text-field:focus {
+  border-color: #d9aaa5;
+  box-shadow: 0 0 0 4px rgb(217 170 165 / 12%);
+}
+
+.sheet-layer {
+  position: fixed;
+  z-index: 50;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(68 48 44 / 32%);
+  backdrop-filter: blur(3px);
+}
+
+.sheet-panel {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  max-height: min(88vh, 760px);
+  overflow-y: auto;
+  border-radius: 30px 30px 0 0;
+  background: #fffaf8;
+  padding: 13px 20px calc(24px + env(safe-area-inset-bottom));
+  box-shadow: 0 -24px 70px rgb(77 52 47 / 18%);
+  animation: sheet-enter 220ms ease-out;
+}
+
+@keyframes sheet-enter {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .bottom-nav {
