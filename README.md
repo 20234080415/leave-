@@ -102,3 +102,12 @@ email authentication, and two-person space creation/joining are complete.
 Daily records, private image uploads, and simultaneously revealed daily
 questions are also connected to Supabase, together with wishes and checklist
 steps.
+<img width="122" height="271" alt="af8d49c5dcd83c09fd4b10b95d5491c7" src="https://github.com/user-attachments/assets/b3aeb506-0243-4d03-8190-b97514435cfe" />
+<img width="122" height="271" alt="2c600679069fc4284e85889f10554fcd" src="https://github.com/user-attachments/assets/c1a3bbde-2f8a-4999-931e-ec295cd24fb4" />
+<img width="122" height="271" alt="7f4657d069387265743b8731a682ec19" src="https://github.com/user-attachments/assets/21996129-53eb-4929-b7c5-3d85b9211998" />
+<img width="122" height="271" alt="2f772a86ab39d9c658b63156b7401c87" src="https://github.com/user-attachments/assets/2de758c8-b41f-4466-9f29-36191fe1339d" />
+<img width="122" height="271" alt="8a0bea014b18e55b6b6f34d6d5315a31" src="https://github.com/user-attachments/assets/a2521233-84ed-4883-b08b-8a87b15422cf" />
+
+
+
+
