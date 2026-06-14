@@ -6,8 +6,18 @@ export const metadata: Metadata = {
   title: "登录",
 };
 
-export default function AuthPage() {
+export default async function AuthPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    confirmed?: string;
+    handoff?: string;
+    error?: string;
+  }>;
+}) {
   const configured = isSupabaseConfigured();
+  const params = await searchParams;
+  const notice = getAuthNotice(params);
 
   return (
     <div className="flex min-h-[calc(100vh-140px)] flex-col justify-center">
@@ -33,7 +43,41 @@ export default function AuthPage() {
         </div>
       ) : null}
 
-      <AuthForm configured={configured} />
+      <AuthForm
+        configured={configured}
+        initialMessage={notice?.message}
+        initialError={notice?.isError}
+      />
     </div>
   );
+}
+
+function getAuthNotice(params: {
+  confirmed?: string;
+  handoff?: string;
+  error?: string;
+}) {
+  if (params.confirmed === "1" && params.handoff === "1") {
+    return {
+      message:
+        "邮箱已经确认。QQ 邮箱可能在另一个页面打开了链接，请回到刚才的浏览器，直接登录就好。",
+      isError: false,
+    };
+  }
+
+  if (params.confirmed === "1") {
+    return {
+      message: "邮箱已经确认，可以登录了。",
+      isError: false,
+    };
+  }
+
+  if (params.error === "confirmation") {
+    return {
+      message: "这个确认链接没有接上。可以回到邮箱重新打开，或直接试试登录。",
+      isError: true,
+    };
+  }
+
+  return null;
 }

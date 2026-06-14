@@ -6,14 +6,22 @@ import { createClient } from "@/lib/supabase/client";
 
 type AuthMode = "login" | "signup";
 
-export function AuthForm({ configured }: { configured: boolean }) {
+export function AuthForm({
+  configured,
+  initialMessage = null,
+  initialError = false,
+}: {
+  configured: boolean;
+  initialMessage?: string | null;
+  initialError?: boolean;
+}) {
   const router = useRouter();
   const [mode, setMode] = useState<AuthMode>("login");
   const [nickname, setNickname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState<string | null>(null);
-  const [isError, setIsError] = useState(false);
+  const [message, setMessage] = useState<string | null>(initialMessage);
+  const [isError, setIsError] = useState(initialError);
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -48,7 +56,11 @@ export function AuthForm({ configured }: { configured: boolean }) {
         router.push("/onboarding");
         router.refresh();
       } else {
-        setMessage("确认邮件已经寄出。确认邮箱后，再回来继续。");
+        setMode("login");
+        setPassword("");
+        setMessage(
+          "确认邮件已经寄出。点开邮件完成确认后，回到这里直接登录就好。",
+        );
       }
     } else {
       const { error } = await supabase.auth.signInWithPassword({

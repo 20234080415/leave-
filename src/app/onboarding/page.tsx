@@ -10,11 +10,16 @@ export const metadata: Metadata = {
   title: "开始我们的留白",
 };
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ confirmed?: string }>;
+}) {
   if (!isSupabaseConfigured()) {
     return <ConfigurationRequired />;
   }
 
+  const params = await searchParams;
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const claims = data?.claims;
@@ -53,6 +58,15 @@ export default async function OnboardingPage() {
           你可以创建一个新的留白空间，或用对方给你的邀请码加入。一个空间最多两个人。
         </p>
       </header>
+
+      {params.confirmed === "1" ? (
+        <p
+          role="status"
+          className="mb-4 rounded-2xl bg-[#f0f4eb] px-4 py-3 text-sm leading-6 text-[#66715c]"
+        >
+          邮箱已经确认，账号也准备好了。
+        </p>
+      ) : null}
 
       <SpaceOnboarding />
 
