@@ -77,7 +77,10 @@ export function QuestionView({
       ) : isRevealed ? (
         <RevealedAnswers answers={revealedAnswers} userId={userId} />
       ) : currentUserAnswered ? (
-        <WaitingCard memberCount={memberCount} />
+        <WaitingCard
+          memberCount={memberCount}
+          questionIndex={questionIndex}
+        />
       ) : (
         <AnswerForm
           spaceId={spaceId}
@@ -301,7 +304,79 @@ function AnswerForm({
   );
 }
 
-function WaitingCard({ memberCount }: { memberCount: number }) {
+function WaitingCard({
+  memberCount,
+  questionIndex,
+}: {
+  memberCount: number;
+  questionIndex: number;
+}) {
+  const router = useRouter();
+  const [revising, setRevising] = useState(false);
+  const [answer, setAnswer] = useState("");
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function reviseAnswer(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const normalizedAnswer = answer.trim();
+
+    if (!normalizedAnswer) {
+      return;
+    }
+
+    setPending(true);
+    setError(null);
+    const supabase = createClient();
+    const { error: updateError } = await supabase.rpc(
+      "update_current_question_answer",
+      {
+        target_question_index: questionIndex,
+        new_answer: normalizedAnswer,
+      },
+    );
+
+    if (updateError) {
+      setError(getAnswerManagementError(updateError.message));
+      setPending(false);
+      return;
+    }
+
+    setAnswer("");
+    setRevising(false);
+    setPending(false);
+    router.refresh();
+  }
+
+  async function withdrawAnswer() {
+    if (!window.confirm("确定撤回今天的回答吗？撤回后可以重新填写。")) {
+      return;
+    }
+
+    setPending(true);
+    setError(null);
+    const supabase = createClient();
+    const { data: imagePath, error: deleteError } = await supabase.rpc(
+      "delete_current_question_answer",
+      {
+        target_question_index: questionIndex,
+      },
+    );
+
+    if (deleteError) {
+      setError(getAnswerManagementError(deleteError.message));
+      setPending(false);
+      return;
+    }
+
+    if (typeof imagePath === "string" && imagePath) {
+      await supabase.storage.from("record-images").remove([imagePath]);
+    }
+
+    setPending(false);
+    router.refresh();
+  }
+
   return (
     <SoftCard className="mt-4 border border-[#f0e4e0] text-center">
       <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#f7e7e4] text-2xl text-rose-deep">
@@ -314,6 +389,73 @@ function WaitingCard({ memberCount }: { memberCount: number }) {
       {memberCount < 2 ? (
         <p className="mt-4 text-xs text-ink-faint">
           空间里还留着一个位置，可以在“我们”页复制邀请码。
+        </p>
+      ) : null}
+
+      {revising ? (
+        <form className="mt-5 text-left" onSubmit={reviseAnswer}>
+          <label htmlFor="revised-answer" className="field-label">
+            重新写一份回答
+          </label>
+          <textarea
+            id="revised-answer"
+            className="text-field min-h-28 resize-none leading-7"
+            value={answer}
+            onChange={(event) => setAnswer(event.target.value)}
+            placeholder="新的文字会替换刚才的回答，原图片会保留。"
+            maxLength={3000}
+            disabled={pending}
+            required
+          />
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              className="choice-chip flex-1"
+              onClick={() => {
+                setRevising(false);
+                setAnswer("");
+                setError(null);
+              }}
+              disabled={pending}
+            >
+              取消
+            </button>
+            <button
+              type="submit"
+              className="soft-button flex-1"
+              disabled={pending || !answer.trim()}
+            >
+              {pending ? "正在保存…" : "替换回答"}
+            </button>
+          </div>
+        </form>
+      ) : (
+        <div className="mt-5 flex justify-center gap-2">
+          <button
+            type="button"
+            className="rounded-full bg-[#f5ece9] px-4 py-2 text-xs text-ink-muted"
+            onClick={() => setRevising(true)}
+            disabled={pending}
+          >
+            重新写一份
+          </button>
+          <button
+            type="button"
+            className="rounded-full px-4 py-2 text-xs text-[#a25550]"
+            onClick={withdrawAnswer}
+            disabled={pending}
+          >
+            {pending ? "正在处理…" : "撤回答案"}
+          </button>
+        </div>
+      )}
+
+      {error ? (
+        <p
+          role="alert"
+          className="mt-4 rounded-2xl bg-[#fff0ee] px-4 py-3 text-left text-sm leading-6 text-[#a25550]"
+        >
+          {error}
         </p>
       ) : null}
     </SoftCard>
@@ -446,6 +588,25 @@ function getAnswerErrorMessage(message: string) {
   }
 
   return "答案保存失败，已清理上传图片，请稍后再试。";
+}
+
+function getAnswerManagementError(message: string) {
+  const normalized = message.toLowerCase();
+
+  if (normalized.includes("revealed")) {
+    return "两份答案已经揭晓，不能再修改或撤回。";
+  }
+
+  if (
+    normalized.includes("update_current_question_answer")
+    || normalized.includes("delete_current_question_answer")
+    || normalized.includes("schema cache")
+    || normalized.includes("could not find the function")
+  ) {
+    return "回答管理功能尚未部署，请先执行最新的 Supabase migration。";
+  }
+
+  return "这次操作没有完成，请稍后再试。";
 }
 
 function formatAnswerTime(value: string) {
