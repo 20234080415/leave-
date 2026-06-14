@@ -29,7 +29,13 @@ export default async function UsPage() {
     redirect("/onboarding");
   }
 
-  const [{ data: space }, { data: memberRows }] = await Promise.all([
+  const [
+    { data: space },
+    { data: memberRows },
+    recordCountResult,
+    wishCountResult,
+    answerCountResult,
+  ] = await Promise.all([
     supabase
       .from("spaces")
       .select("id, name, invite_code, created_at")
@@ -40,6 +46,18 @@ export default async function UsPage() {
       .select("user_id, joined_at")
       .eq("space_id", membership.space_id)
       .order("joined_at", { ascending: true }),
+    supabase
+      .from("daily_records")
+      .select("id", { count: "exact", head: true })
+      .eq("space_id", membership.space_id),
+    supabase
+      .from("wishes")
+      .select("id", { count: "exact", head: true })
+      .eq("space_id", membership.space_id),
+    supabase
+      .from("question_answers")
+      .select("id", { count: "exact", head: true })
+      .eq("space_id", membership.space_id),
   ]);
 
   if (!space) {
@@ -107,9 +125,18 @@ export default async function UsPage() {
       </SoftCard>
 
       <section className="mt-4 grid grid-cols-3 gap-3">
-        <StatCard value="0" label="共同记录" />
-        <StatCard value="0" label="共同愿望" />
-        <StatCard value="0" label="回答问题" />
+        <StatCard
+          value={formatCount(recordCountResult.count, recordCountResult.error)}
+          label="可见记录"
+        />
+        <StatCard
+          value={formatCount(wishCountResult.count, wishCountResult.error)}
+          label="共同愿望"
+        />
+        <StatCard
+          value={formatCount(answerCountResult.count, answerCountResult.error)}
+          label="已揭晓回答"
+        />
       </section>
 
       <InviteCodeCard
@@ -160,6 +187,10 @@ function StatCard({ value, label }: { value: string; label: string }) {
       <p className="mt-1 text-[11px] text-ink-muted">{label}</p>
     </SoftCard>
   );
+}
+
+function formatCount(count: number | null, error: unknown) {
+  return error ? "—" : String(count ?? 0);
 }
 
 function differenceInDays(startValue: string, end: Date) {
