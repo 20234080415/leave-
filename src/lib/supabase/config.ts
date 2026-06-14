@@ -7,8 +7,17 @@ export function isSupabaseConfigured() {
       key &&
       !url.includes("你的URL") &&
       !key.includes("你的KEY") &&
-      URL.canParse(url),
+      isValidHttpUrl(url),
   );
+}
+
+function isValidHttpUrl(value: string) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
 }
 
 export function getSupabaseConfig() {
