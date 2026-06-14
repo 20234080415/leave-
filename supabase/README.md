@@ -7,7 +7,6 @@
    - `202606130003_daily_records_and_storage.sql`
    - `202606130004_daily_questions.sql`
    - `202606130005_wishes_and_steps.sql`
-   - `202606140001_security_hardening.sql`
 3. 在 **Authentication > URL Configuration** 中设置：
    - Site URL：`http://localhost:3000`
    - Redirect URL：`http://localhost:3000/auth/callback`
@@ -45,9 +44,3 @@ space_id/user_id/questions/random-file-name.ext
 
 `wishes` 直接通过 `space_id` 校验成员关系，`wish_steps` 则通过
 `can_access_wish(wish_id)` 追溯所属愿望的 `space_id`，因此步骤表不需要重复保存空间字段。
-
-安全回归测试：
-
-1. 在测试 Supabase 项目的 SQL Editor 中执行 `tests/rls_cross_space_security.sql`。
-2. 确认返回结果中的 `passed` 全部为 `true`。
-3. 测试在事务中运行并最终回滚，不会保留测试数据。
