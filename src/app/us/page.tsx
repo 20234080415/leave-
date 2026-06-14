@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { AccountSettings } from "@/components/account-settings";
 import { InviteCodeCard } from "@/components/invite-code-card";
 import { PageHeader } from "@/components/page-header";
 import { SoftCard } from "@/components/soft-card";
@@ -38,7 +39,7 @@ export default async function UsPage() {
   ] = await Promise.all([
     supabase
       .from("spaces")
-      .select("id, name, invite_code, created_at")
+      .select("id, name, invite_code, created_at, created_by")
       .eq("id", membership.space_id)
       .single(),
     supabase
@@ -77,6 +78,7 @@ export default async function UsPage() {
     .map((id) => profiles.find((profile) => profile.id === id))
     .filter((profile): profile is Profile => Boolean(profile));
   const hasPartner = orderedProfiles.length === 2;
+  const currentProfile = profiles.find((profile) => profile.id === userId);
   const daysTogether = differenceInDays(space.created_at, new Date()) + 1;
 
   return (
@@ -142,6 +144,14 @@ export default async function UsPage() {
       <InviteCodeCard
         inviteCode={space.invite_code}
         hasPartner={hasPartner}
+      />
+
+      <AccountSettings
+        userId={userId}
+        nickname={currentProfile?.nickname ?? "留白用户"}
+        spaceId={space.id}
+        spaceName={space.name}
+        canEditSpace={space.created_by === userId}
       />
     </>
   );
