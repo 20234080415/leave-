@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { SheetModal } from "@/components/sheet-modal";
 import { SoftCard } from "@/components/soft-card";
 import { createClient } from "@/lib/supabase/client";
 import type { WishStatus } from "@/components/wishes-view";
@@ -32,6 +33,9 @@ export function WishDetail({ wish }: { wish: WishDetailData }) {
   const [steps, setSteps] = useState(wish.steps);
   const [status, setStatus] = useState(wish.status);
   const [newStep, setNewStep] = useState("");
+  const [editingStepId, setEditingStepId] = useState<string | null>(null);
+  const [editingStepContent, setEditingStepContent] = useState("");
+  const [editOpen, setEditOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const completedSteps = steps.filter((step) => step.is_done).length;
@@ -90,6 +94,10 @@ export function WishDetail({ wish }: { wish: WishDetailData }) {
   }
 
   async function deleteStep(stepId: string) {
+    if (!window.confirm("确定删除这个步骤吗？")) {
+      return;
+    }
+
     setPendingId(stepId);
     setError(null);
     const supabase = createClient();
@@ -105,6 +113,60 @@ export function WishDetail({ wish }: { wish: WishDetailData }) {
       router.refresh();
     }
     setPendingId(null);
+  }
+
+  async function editStep(event: FormEvent<HTMLFormElement>, stepId: string) {
+    event.preventDefault();
+    const content = editingStepContent.trim();
+
+    if (!content) {
+      return;
+    }
+
+    setPendingId(stepId);
+    setError(null);
+    const supabase = createClient();
+    const { error: updateError } = await supabase
+      .from("wish_steps")
+      .update({ content })
+      .eq("id", stepId);
+
+    if (updateError) {
+      setError(getWishErrorMessage(updateError.message));
+    } else {
+      setSteps((current) =>
+        current.map((step) =>
+          step.id === stepId ? { ...step, content } : step,
+        ),
+      );
+      setEditingStepId(null);
+      setEditingStepContent("");
+      router.refresh();
+    }
+    setPendingId(null);
+  }
+
+  async function deleteWish() {
+    if (!window.confirm("确定删除这个愿望吗？其中的步骤也会一起删除。")) {
+      return;
+    }
+
+    setPendingId("delete-wish");
+    setError(null);
+    const supabase = createClient();
+    const { error: deleteError } = await supabase
+      .from("wishes")
+      .delete()
+      .eq("id", wish.id);
+
+    if (deleteError) {
+      setError(getWishErrorMessage(deleteError.message));
+      setPendingId(null);
+      return;
+    }
+
+    router.push("/wishes");
+    router.refresh();
   }
 
   async function changeStatus(nextStatus: WishStatus) {
@@ -138,9 +200,18 @@ export function WishDetail({ wish }: { wish: WishDetailData }) {
         >
           ← 返回愿望清单
         </Link>
-        <p className="mt-7 text-xs tracking-[0.2em] text-rose-deep">
-          WISH DETAIL
-        </p>
+        <div className="mt-7 flex items-center justify-between gap-3">
+          <p className="text-xs tracking-[0.2em] text-rose-deep">
+            WISH DETAIL
+          </p>
+          <button
+            type="button"
+            className="rounded-full bg-[#f5ece9] px-4 py-2 text-xs text-ink-muted"
+            onClick={() => setEditOpen(true)}
+          >
+            编辑愿望
+          </button>
+        </div>
         <h1 className="mt-3 text-[28px] font-medium leading-tight tracking-[-0.03em] text-ink">
           {wish.title}
         </h1>
@@ -203,39 +274,79 @@ export function WishDetail({ wish }: { wish: WishDetailData }) {
           {steps.map((step) => (
             <div
               key={step.id}
-              className="flex items-center gap-3 rounded-[18px] bg-[#faf5f2] p-3"
+              className="rounded-[18px] bg-[#faf5f2] p-3"
             >
-              <button
-                type="button"
-                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition ${
-                  step.is_done
-                    ? "border-[#d59a94] bg-[#d59a94] text-white"
-                    : "border-[#d9c9c4] bg-white text-transparent"
-                }`}
-                aria-label={step.is_done ? "标记为未完成" : "标记为已完成"}
-                onClick={() => toggleStep(step)}
-                disabled={pendingId === step.id}
-              >
-                ✓
-              </button>
-              <span
-                className={`min-w-0 flex-1 text-sm leading-6 ${
-                  step.is_done
-                    ? "text-ink-faint line-through"
-                    : "text-ink-muted"
-                }`}
-              >
-                {step.content}
-              </span>
-              <button
-                type="button"
-                className="px-1 text-lg text-ink-faint"
-                aria-label={`删除步骤：${step.content}`}
-                onClick={() => deleteStep(step.id)}
-                disabled={pendingId === step.id}
-              >
-                ×
-              </button>
+              {editingStepId === step.id ? (
+                <form
+                  className="flex gap-2"
+                  onSubmit={(event) => editStep(event, step.id)}
+                >
+                  <input
+                    className="text-field min-w-0 flex-1 py-2"
+                    value={editingStepContent}
+                    onChange={(event) =>
+                      setEditingStepContent(event.target.value)
+                    }
+                    maxLength={300}
+                    autoFocus
+                    disabled={pendingId === step.id}
+                  />
+                  <button
+                    type="submit"
+                    className="rounded-xl bg-[#d99d97] px-3 text-xs text-white"
+                    disabled={
+                      !editingStepContent.trim() || pendingId === step.id
+                    }
+                  >
+                    保存
+                  </button>
+                </form>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition ${
+                      step.is_done
+                        ? "border-[#d59a94] bg-[#d59a94] text-white"
+                        : "border-[#d9c9c4] bg-white text-transparent"
+                    }`}
+                    aria-label={step.is_done ? "标记为未完成" : "标记为已完成"}
+                    onClick={() => toggleStep(step)}
+                    disabled={pendingId === step.id}
+                  >
+                    ✓
+                  </button>
+                  <span
+                    className={`min-w-0 flex-1 text-sm leading-6 ${
+                      step.is_done
+                        ? "text-ink-faint line-through"
+                        : "text-ink-muted"
+                    }`}
+                  >
+                    {step.content}
+                  </span>
+                  <button
+                    type="button"
+                    className="px-1 text-xs text-ink-faint"
+                    onClick={() => {
+                      setEditingStepId(step.id);
+                      setEditingStepContent(step.content);
+                    }}
+                    disabled={pendingId === step.id}
+                  >
+                    编辑
+                  </button>
+                  <button
+                    type="button"
+                    className="px-1 text-lg text-ink-faint"
+                    aria-label={`删除步骤：${step.content}`}
+                    onClick={() => deleteStep(step.id)}
+                    disabled={pendingId === step.id}
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -310,7 +421,141 @@ export function WishDetail({ wish }: { wish: WishDetailData }) {
           {error}
         </p>
       ) : null}
+
+      <SoftCard className="mt-4 border border-[#f0dfdb] bg-white/55">
+        <p className="text-sm font-medium text-ink">管理这个愿望</p>
+        <p className="mt-1 text-xs leading-5 text-ink-muted">
+          删除后，愿望和其中的全部步骤都无法恢复。
+        </p>
+        <button
+          type="button"
+          className="mt-4 text-sm text-[#a25550]"
+          onClick={deleteWish}
+          disabled={pendingId === "delete-wish"}
+        >
+          {pendingId === "delete-wish" ? "正在删除…" : "删除这个愿望"}
+        </button>
+      </SoftCard>
+
+      {editOpen ? (
+        <EditWishModal
+          wish={wish}
+          onClose={() => setEditOpen(false)}
+          onError={setError}
+        />
+      ) : null}
     </>
+  );
+}
+
+function EditWishModal({
+  wish,
+  onClose,
+  onError,
+}: {
+  wish: WishDetailData;
+  onClose: () => void;
+  onError: (message: string | null) => void;
+}) {
+  const router = useRouter();
+  const [title, setTitle] = useState(wish.title);
+  const [description, setDescription] = useState(wish.description ?? "");
+  const [targetDate, setTargetDate] = useState(wish.targetDate ?? "");
+  const [saving, setSaving] = useState(false);
+
+  async function saveWish(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const normalizedTitle = title.trim();
+
+    if (!normalizedTitle) {
+      onError("愿望标题不能为空。");
+      return;
+    }
+
+    setSaving(true);
+    onError(null);
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("wishes")
+      .update({
+        title: normalizedTitle,
+        description: description.trim() || null,
+        target_date: targetDate || null,
+      })
+      .eq("id", wish.id);
+
+    if (error) {
+      onError(getWishErrorMessage(error.message));
+      setSaving(false);
+      return;
+    }
+
+    onClose();
+    router.refresh();
+  }
+
+  return (
+    <SheetModal
+      open
+      title="编辑愿望"
+      description="调整想法和日期，不会影响已有步骤。"
+      onClose={() => {
+        if (!saving) {
+          onClose();
+        }
+      }}
+    >
+      <form className="grid gap-5" onSubmit={saveWish}>
+        <div>
+          <label htmlFor="edit-wish-title" className="field-label">
+            愿望标题
+          </label>
+          <input
+            id="edit-wish-title"
+            className="text-field"
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            maxLength={100}
+            disabled={saving}
+            required
+          />
+        </div>
+        <div>
+          <label htmlFor="edit-wish-description" className="field-label">
+            想补充的话
+          </label>
+          <textarea
+            id="edit-wish-description"
+            className="text-field min-h-24 resize-none leading-7"
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            maxLength={2000}
+            disabled={saving}
+          />
+        </div>
+        <div>
+          <label htmlFor="edit-wish-date" className="field-label">
+            期待的日期
+            <span className="ml-2 font-normal text-ink-faint">选填</span>
+          </label>
+          <input
+            id="edit-wish-date"
+            type="date"
+            className="text-field"
+            value={targetDate}
+            onChange={(event) => setTargetDate(event.target.value)}
+            disabled={saving}
+          />
+        </div>
+        <button
+          type="submit"
+          className="soft-button w-full disabled:opacity-60"
+          disabled={saving || !title.trim()}
+        >
+          {saving ? "正在保存…" : "保存修改"}
+        </button>
+      </form>
+    </SheetModal>
   );
 }
 
