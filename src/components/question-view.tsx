@@ -2,6 +2,7 @@
 
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { PageHeader } from "@/components/page-header";
 import { SoftCard } from "@/components/soft-card";
 import { createClient } from "@/lib/supabase/client";
@@ -315,6 +316,7 @@ function WaitingCard({
   const [revising, setRevising] = useState(false);
   const [answer, setAnswer] = useState("");
   const [pending, setPending] = useState(false);
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function reviseAnswer(event: FormEvent<HTMLFormElement>) {
@@ -349,10 +351,6 @@ function WaitingCard({
   }
 
   async function withdrawAnswer() {
-    if (!window.confirm("确定撤回今天的回答吗？撤回后可以重新填写。")) {
-      return;
-    }
-
     setPending(true);
     setError(null);
     const supabase = createClient();
@@ -374,6 +372,7 @@ function WaitingCard({
     }
 
     setPending(false);
+    setWithdrawOpen(false);
     router.refresh();
   }
 
@@ -442,7 +441,7 @@ function WaitingCard({
           <button
             type="button"
             className="rounded-full px-4 py-2 text-xs text-[#a25550]"
-            onClick={withdrawAnswer}
+            onClick={() => setWithdrawOpen(true)}
             disabled={pending}
           >
             {pending ? "正在处理…" : "撤回答案"}
@@ -458,6 +457,16 @@ function WaitingCard({
           {error}
         </p>
       ) : null}
+
+      <ConfirmDialog
+        open={withdrawOpen}
+        title="要把这份回答收回来吗？"
+        description="撤回后不会保留，你仍然可以重新写一份。"
+        confirmLabel="撤回答案"
+        pending={pending}
+        onClose={() => setWithdrawOpen(false)}
+        onConfirm={() => void withdrawAnswer()}
+      />
     </SoftCard>
   );
 }

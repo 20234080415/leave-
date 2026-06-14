@@ -36,10 +36,42 @@ body {
 button,
 a {
   -webkit-tap-highlight-color: transparent;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    opacity 160ms ease,
+    transform 160ms ease;
 }
 
 button {
   cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+@media (hover: hover) {
+  button:not(:disabled):hover,
+  a:hover {
+    filter: brightness(0.985);
+  }
+}
+
+button:not(:disabled):active {
+  transform: scale(0.98);
+}
+
+a:active {
+  opacity: 0.88;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid rgb(169 104 101 / 45%);
+  outline-offset: 3px;
 }
 
 input,

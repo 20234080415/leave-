@@ -156,11 +156,11 @@ export default async function Home() {
       <section className="grid gap-4">
         <Link
           href="/records?compose=1"
-          className="group flex min-h-[72px] items-center justify-between rounded-[24px] bg-rose-deep px-5 text-white shadow-[0_14px_32px_rgb(169_104_101_/_24%)] transition active:scale-[0.985] active:shadow-[0_8px_20px_rgb(169_104_101_/_18%)]"
+          className="group flex min-h-[86px] items-center justify-between rounded-[26px] bg-gradient-to-br from-[#b77873] to-rose-deep px-5 text-white shadow-[0_18px_38px_rgb(169_104_101_/_30%)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_42px_rgb(169_104_101_/_34%)] active:translate-y-0 active:scale-[0.985] active:shadow-[0_8px_20px_rgb(169_104_101_/_18%)]"
           aria-label="写下今天"
         >
           <div>
-            <p className="text-lg font-medium">写下今天</p>
+            <p className="text-xl font-medium tracking-[-0.02em]">写下今天</p>
             <p className="mt-1 text-xs text-white/70">
               一句话，也可以好好留住此刻
             </p>
@@ -169,22 +169,6 @@ export default async function Home() {
             →
           </span>
         </Link>
-
-        <div className="grid grid-cols-2 gap-3">
-          <TodaySummaryCard
-            label="我的今天"
-            record={myRecord}
-            emptyText="还留着一小片空白"
-            composeLink
-          />
-          <TodaySummaryCard
-            label="TA 的今天"
-            record={partnerRecord}
-            emptyText={
-              partnerId ? "今天还没有留下记录" : "这里还留着一个位置"
-            }
-          />
-        </div>
 
         {latestRecord ? (
           <Link href="/records" aria-label="查看今日最新记录">
@@ -256,6 +240,28 @@ export default async function Home() {
             </p>
           </SoftCard>
         </Link>
+
+        <div className={partnerId ? "grid grid-cols-2 gap-3" : "grid"}>
+          <TodaySummaryCard
+            label="我的今天"
+            record={myRecord}
+            emptyText="还留着一小片空白"
+            composeLink
+          />
+          {partnerId ? (
+            <TodaySummaryCard
+              label="TA 的今天"
+              record={partnerRecord}
+              emptyText="今天还没有留下记录"
+            />
+          ) : null}
+        </div>
+
+        {!partnerId ? (
+          <p className="px-2 text-center text-sm leading-6 text-ink-muted">
+            这里还留着一个位置。
+          </p>
+        ) : null}
       </section>
     </>
   );
@@ -282,8 +288,8 @@ function TodaySummaryCard({
           <span className="h-2 w-2 rounded-full bg-[#dba39e]" />
         )}
       </div>
-      <p className="mt-4 text-sm text-ink-muted">{label}</p>
-      <p className="mt-1 line-clamp-2 font-medium leading-6 text-ink">
+      <p className="mt-4 text-xs tracking-[0.08em] text-ink-faint">{label}</p>
+      <p className="mt-2 line-clamp-3 text-[15px] font-medium leading-7 text-ink">
         {record ? record.content : emptyText}
       </p>
       {record ? (

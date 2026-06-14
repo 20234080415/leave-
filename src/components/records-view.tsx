@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { PageHeader } from "@/components/page-header";
 import { RecordComposer } from "@/components/record-composer";
 import { SoftCard } from "@/components/soft-card";
@@ -41,6 +42,7 @@ export function RecordsView({
   const [editingRecord, setEditingRecord] = useState<RecordItem | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [recordToDelete, setRecordToDelete] = useState<RecordItem | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
 
   const visibleRecords = useMemo(() => {
@@ -66,10 +68,6 @@ export function RecordsView({
   }
 
   async function deleteRecord(record: RecordItem) {
-    if (!window.confirm("确定删除这条记录吗？删除后无法恢复。")) {
-      return;
-    }
-
     setDeletingId(record.id);
     setActionError(null);
     const supabase = createClient();
@@ -95,6 +93,7 @@ export function RecordsView({
     }
 
     setDeletingId(null);
+    setRecordToDelete(null);
     router.refresh();
   }
 
@@ -150,9 +149,8 @@ export function RecordsView({
         <RecordTimeline
           records={visibleRecords}
           userId={userId}
-          deletingId={deletingId}
           onEdit={editRecord}
-          onDelete={deleteRecord}
+          onDelete={setRecordToDelete}
         />
       ) : (
         <SoftCard className="py-12 text-center">
@@ -195,6 +193,20 @@ export function RecordsView({
           record={editingRecord}
         />
       ) : null}
+
+      <ConfirmDialog
+        open={Boolean(recordToDelete)}
+        title="确定要删掉这一天吗？"
+        description="删掉后不会恢复。"
+        confirmLabel="删除"
+        pending={Boolean(deletingId)}
+        onClose={() => setRecordToDelete(null)}
+        onConfirm={() => {
+          if (recordToDelete) {
+            void deleteRecord(recordToDelete);
+          }
+        }}
+      />
     </>
   );
 }
@@ -202,24 +214,24 @@ export function RecordsView({
 function RecordTimeline({
   records,
   userId,
-  deletingId,
   onEdit,
   onDelete,
 }: {
   records: RecordItem[];
   userId: string;
-  deletingId: string | null;
   onEdit: (record: RecordItem) => void;
   onDelete: (record: RecordItem) => void;
 }) {
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
   return (
     <section className="relative grid gap-5 pl-5">
       <div className="absolute bottom-8 left-[5px] top-7 w-px bg-[#e3d4d0]" />
       {records.map((record, index) => (
         <div key={record.id} className="relative">
           <span className="absolute -left-[19px] top-7 h-2.5 w-2.5 rounded-full border-2 border-[#f8f3f0] bg-[#d89b95]" />
-          <SoftCard>
-            <div className="flex items-center gap-3">
+          <SoftCard className="relative">
+            <div className="flex items-start gap-3">
               <Avatar
                 name={record.authorName}
                 url={record.avatarUrl}
@@ -241,9 +253,52 @@ function RecordTimeline({
                   {record.authorId === userId ? " · 我" : ""}
                 </p>
               </div>
-              <div className="text-right text-xs leading-5 text-ink-muted">
-                {record.weather ? <p>☁ {record.weather}</p> : null}
-                {record.mood ? <p>☺ {record.mood}</p> : null}
+              <div className="flex shrink-0 items-start gap-2">
+                <div className="pt-0.5 text-right text-xs leading-5 text-ink-muted">
+                  {record.weather ? <p>☁ {record.weather}</p> : null}
+                  {record.mood ? <p>☺ {record.mood}</p> : null}
+                </div>
+                {record.authorId === userId ? (
+                  <div className="relative">
+                    <button
+                      type="button"
+                      className="flex h-8 w-8 items-center justify-center rounded-full text-lg tracking-[0.08em] text-ink-faint transition hover:bg-[#f5ece9] hover:text-ink-muted active:scale-95"
+                      aria-label="记录操作"
+                      aria-expanded={openMenuId === record.id}
+                      onClick={() =>
+                        setOpenMenuId((current) =>
+                          current === record.id ? null : record.id,
+                        )
+                      }
+                    >
+                      ···
+                    </button>
+                    {openMenuId === record.id ? (
+                      <div className="absolute right-0 top-10 z-10 w-32 overflow-hidden rounded-2xl border border-[#eee1dd] bg-[#fffdfb] p-1.5 shadow-[0_12px_32px_rgb(89_61_54_/_14%)]">
+                        <button
+                          type="button"
+                          className="w-full rounded-xl px-3 py-2.5 text-left text-sm text-ink-muted transition hover:bg-[#f8f0ed] active:bg-[#f3e5e1]"
+                          onClick={() => {
+                            setOpenMenuId(null);
+                            onEdit(record);
+                          }}
+                        >
+                          编辑记录
+                        </button>
+                        <button
+                          type="button"
+                          className="w-full rounded-xl px-3 py-2.5 text-left text-sm text-[#a25550] transition hover:bg-[#fff0ee] active:bg-[#f9dfdc]"
+                          onClick={() => {
+                            setOpenMenuId(null);
+                            onDelete(record);
+                          }}
+                        >
+                          删除记录
+                        </button>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
             </div>
             <p className="mt-5 whitespace-pre-wrap text-[16px] leading-8 text-ink-muted">
@@ -257,26 +312,6 @@ function RecordTimeline({
                   alt="记录中的图片"
                   className="h-full w-full object-cover"
                 />
-              </div>
-            ) : null}
-            {record.authorId === userId ? (
-              <div className="mt-5 flex justify-end gap-2 border-t border-[#eee3df] pt-4">
-                <button
-                  type="button"
-                  className="rounded-full bg-[#f5ece9] px-4 py-2 text-xs text-ink-muted"
-                  onClick={() => onEdit(record)}
-                  disabled={deletingId === record.id}
-                >
-                  编辑
-                </button>
-                <button
-                  type="button"
-                  className="rounded-full px-4 py-2 text-xs text-[#a25550]"
-                  onClick={() => onDelete(record)}
-                  disabled={deletingId === record.id}
-                >
-                  {deletingId === record.id ? "正在删除…" : "删除"}
-                </button>
               </div>
             ) : null}
           </SoftCard>

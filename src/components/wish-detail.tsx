@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { SheetModal } from "@/components/sheet-modal";
 import { SoftCard } from "@/components/soft-card";
 import { createClient } from "@/lib/supabase/client";
@@ -36,6 +37,8 @@ export function WishDetail({ wish }: { wish: WishDetailData }) {
   const [editingStepId, setEditingStepId] = useState<string | null>(null);
   const [editingStepContent, setEditingStepContent] = useState("");
   const [editOpen, setEditOpen] = useState(false);
+  const [stepToDelete, setStepToDelete] = useState<WishStep | null>(null);
+  const [deleteWishOpen, setDeleteWishOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const completedSteps = steps.filter((step) => step.is_done).length;
@@ -94,10 +97,6 @@ export function WishDetail({ wish }: { wish: WishDetailData }) {
   }
 
   async function deleteStep(stepId: string) {
-    if (!window.confirm("确定删除这个步骤吗？")) {
-      return;
-    }
-
     setPendingId(stepId);
     setError(null);
     const supabase = createClient();
@@ -110,6 +109,7 @@ export function WishDetail({ wish }: { wish: WishDetailData }) {
       setError(getWishErrorMessage(deleteError.message));
     } else {
       setSteps((current) => current.filter((step) => step.id !== stepId));
+      setStepToDelete(null);
       router.refresh();
     }
     setPendingId(null);
@@ -147,10 +147,6 @@ export function WishDetail({ wish }: { wish: WishDetailData }) {
   }
 
   async function deleteWish() {
-    if (!window.confirm("确定删除这个愿望吗？其中的步骤也会一起删除。")) {
-      return;
-    }
-
     setPendingId("delete-wish");
     setError(null);
     const supabase = createClient();
@@ -340,7 +336,7 @@ export function WishDetail({ wish }: { wish: WishDetailData }) {
                     type="button"
                     className="px-1 text-lg text-ink-faint"
                     aria-label={`删除步骤：${step.content}`}
-                    onClick={() => deleteStep(step.id)}
+                    onClick={() => setStepToDelete(step)}
                     disabled={pendingId === step.id}
                   >
                     ×
@@ -423,14 +419,14 @@ export function WishDetail({ wish }: { wish: WishDetailData }) {
       ) : null}
 
       <SoftCard className="mt-4 border border-[#f0dfdb] bg-white/55">
-        <p className="text-sm font-medium text-ink">管理这个愿望</p>
+        <p className="text-sm font-medium text-ink">如果想让它离开</p>
         <p className="mt-1 text-xs leading-5 text-ink-muted">
           删除后，愿望和其中的全部步骤都无法恢复。
         </p>
         <button
           type="button"
           className="mt-4 text-sm text-[#a25550]"
-          onClick={deleteWish}
+          onClick={() => setDeleteWishOpen(true)}
           disabled={pendingId === "delete-wish"}
         >
           {pendingId === "delete-wish" ? "正在删除…" : "删除这个愿望"}
@@ -444,6 +440,30 @@ export function WishDetail({ wish }: { wish: WishDetailData }) {
           onError={setError}
         />
       ) : null}
+
+      <ConfirmDialog
+        open={Boolean(stepToDelete)}
+        title="要删掉这个小步骤吗？"
+        description="删掉后不会恢复，愿望本身仍会留在这里。"
+        confirmLabel="删除"
+        pending={Boolean(stepToDelete && pendingId === stepToDelete.id)}
+        onClose={() => setStepToDelete(null)}
+        onConfirm={() => {
+          if (stepToDelete) {
+            void deleteStep(stepToDelete.id);
+          }
+        }}
+      />
+
+      <ConfirmDialog
+        open={deleteWishOpen}
+        title="确定要删掉这个愿望吗？"
+        description="愿望和里面的小步骤都会一起离开，删掉后不会恢复。"
+        confirmLabel="删除"
+        pending={pendingId === "delete-wish"}
+        onClose={() => setDeleteWishOpen(false)}
+        onConfirm={() => void deleteWish()}
+      />
     </>
   );
 }

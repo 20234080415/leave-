@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { SheetModal } from "@/components/sheet-modal";
 import { SoftCard } from "@/components/soft-card";
 import { createClient } from "@/lib/supabase/client";
@@ -21,6 +22,7 @@ export function AccountSettings({
 }) {
   const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
+  const [signOutOpen, setSignOutOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -71,7 +73,7 @@ export function AccountSettings({
         <button
           type="button"
           className="mt-5 text-sm text-[#a25550]"
-          onClick={signOut}
+          onClick={() => setSignOutOpen(true)}
           disabled={signingOut}
         >
           {signingOut ? "正在退出…" : "退出登录"}
@@ -89,6 +91,17 @@ export function AccountSettings({
           onError={setError}
         />
       ) : null}
+
+      <ConfirmDialog
+        open={signOutOpen}
+        title="要先离开一会儿吗？"
+        description="退出后，留在这里的内容不会改变。下次登录时还能继续翻阅。"
+        confirmLabel="退出登录"
+        cancelLabel="留在这里"
+        pending={signingOut}
+        onClose={() => setSignOutOpen(false)}
+        onConfirm={() => void signOut()}
+      />
     </>
   );
 }

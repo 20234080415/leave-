@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { OnboardingSignOut } from "@/components/onboarding-sign-out";
 import { SpaceOnboarding } from "@/components/space-onboarding";
 import { SoftCard } from "@/components/soft-card";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -55,24 +56,9 @@ export default async function OnboardingPage() {
 
       <SpaceOnboarding />
 
-      <form action={signOut} className="mt-7 text-center">
-        <button type="submit" className="text-sm text-ink-faint">
-          退出当前账号
-        </button>
-      </form>
+      <OnboardingSignOut />
     </div>
   );
-}
-
-async function signOut() {
-  "use server";
-
-  if (isSupabaseConfigured()) {
-    const supabase = await createClient();
-    await supabase.auth.signOut();
-  }
-
-  redirect("/auth");
 }
 
 function ConfigurationRequired() {

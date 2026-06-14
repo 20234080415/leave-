@@ -85,6 +85,16 @@ export function WishesView({
           {visibleWishes.map((wish, index) => (
             <WishCard key={wish.id} wish={wish} index={index} />
           ))}
+          {filter === "全部" && wishes.length <= 2 ? (
+            <SoftCard className="mt-1 border border-white/70 bg-[#fbf4f1] py-8 text-center shadow-none">
+              <p className="text-base font-medium text-ink">
+                愿望不用很多。
+              </p>
+              <p className="mx-auto mt-3 max-w-[260px] whitespace-pre-line text-sm leading-7 text-ink-muted">
+                {"一个想一起完成的小事，\n也值得被认真放在这里。"}
+              </p>
+            </SoftCard>
+          ) : null}
         </section>
       ) : (
         <SoftCard className="py-12 text-center">

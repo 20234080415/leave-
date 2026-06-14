@@ -129,15 +129,15 @@ export default async function UsPage() {
       <section className="mt-4 grid grid-cols-3 gap-3">
         <StatCard
           value={formatCount(recordCountResult.count, recordCountResult.error)}
-          label="可见记录"
+          label="留下的记录"
         />
         <StatCard
           value={formatCount(wishCountResult.count, wishCountResult.error)}
-          label="共同愿望"
+          label="一起的愿望"
         />
         <StatCard
           value={formatCount(answerCountResult.count, answerCountResult.error)}
-          label="已揭晓回答"
+          label="相遇的答案"
         />
       </section>
 
@@ -192,8 +192,8 @@ function ProfileAvatar({
 
 function StatCard({ value, label }: { value: string; label: string }) {
   return (
-    <SoftCard className="px-2 py-4 text-center">
-      <p className="text-xl font-medium text-rose-deep">{value}</p>
+    <SoftCard className="px-2 py-4 text-center shadow-none">
+      <p className="text-base font-medium text-ink-muted">{value}</p>
       <p className="mt-1 text-[11px] text-ink-muted">{label}</p>
     </SoftCard>
   );
