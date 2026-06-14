@@ -6,6 +6,7 @@ import {
   getQuestionDateKey,
 } from "@/lib/daily-question";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionRefreshPath } from "@/lib/supabase/session";
 
 type HomeRecord = {
   id: string;
@@ -29,7 +30,7 @@ export default async function Home() {
   const userId = authData?.claims.sub;
 
   if (!userId) {
-    redirect("/auth");
+    redirect(getSessionRefreshPath("/"));
   }
 
   const { data: membership } = await supabase

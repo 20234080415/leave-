@@ -4,6 +4,7 @@ import { InviteCodeCard } from "@/components/invite-code-card";
 import { PageHeader } from "@/components/page-header";
 import { SoftCard } from "@/components/soft-card";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionRefreshPath } from "@/lib/supabase/session";
 
 type Profile = {
   id: string;
@@ -17,7 +18,7 @@ export default async function UsPage() {
   const userId = authData?.claims.sub;
 
   if (!userId) {
-    redirect("/auth");
+    redirect(getSessionRefreshPath("/us"));
   }
 
   const { data: membership } = await supabase

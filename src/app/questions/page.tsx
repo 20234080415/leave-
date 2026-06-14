@@ -9,6 +9,7 @@ import {
   getQuestionDateKey,
 } from "@/lib/daily-question";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionRefreshPath } from "@/lib/supabase/session";
 
 type QuestionAnswerRow = {
   id: string;
@@ -30,7 +31,7 @@ export default async function QuestionsPage() {
   const userId = authData?.claims.sub;
 
   if (!userId) {
-    redirect("/auth");
+    redirect(getSessionRefreshPath("/questions"));
   }
 
   const [membershipResult, questionCountResult] = await Promise.all([

@@ -13,6 +13,7 @@ export default async function AuthPage({
     confirmed?: string;
     handoff?: string;
     error?: string;
+    reason?: string;
   }>;
 }) {
   const configured = isSupabaseConfigured();
@@ -56,6 +57,7 @@ function getAuthNotice(params: {
   confirmed?: string;
   handoff?: string;
   error?: string;
+  reason?: string;
 }) {
   if (params.confirmed === "1" && params.handoff === "1") {
     return {
@@ -76,6 +78,13 @@ function getAuthNotice(params: {
     return {
       message: "这个确认链接没有接上。可以回到邮箱重新打开，或直接试试登录。",
       isError: true,
+    };
+  }
+
+  if (params.reason === "session") {
+    return {
+      message: "登录状态已经结束，再登录一次就可以继续。",
+      isError: false,
     };
   }
 

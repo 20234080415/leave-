@@ -5,6 +5,7 @@ import { SpaceOnboarding } from "@/components/space-onboarding";
 import { SoftCard } from "@/components/soft-card";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionRefreshPath } from "@/lib/supabase/session";
 
 export const metadata: Metadata = {
   title: "开始我们的留白",
@@ -25,7 +26,7 @@ export default async function OnboardingPage({
   const claims = data?.claims;
 
   if (!claims?.sub) {
-    redirect("/auth");
+    redirect(getSessionRefreshPath("/onboarding"));
   }
 
   const [{ data: membership }, { data: profile }] = await Promise.all([

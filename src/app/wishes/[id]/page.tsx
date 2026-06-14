@@ -5,6 +5,7 @@ import {
   type WishStep,
 } from "@/components/wish-detail";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionRefreshPath } from "@/lib/supabase/session";
 
 type WishRow = {
   id: string;
@@ -26,7 +27,7 @@ export default async function WishDetailPage({
   const { data: authData } = await supabase.auth.getClaims();
 
   if (!authData?.claims.sub) {
-    redirect("/auth");
+    redirect(getSessionRefreshPath(`/wishes/${encodeURIComponent(id)}`));
   }
 
   const { data, error } = await supabase

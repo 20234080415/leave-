@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { WishesView, type WishListItem } from "@/components/wishes-view";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionRefreshPath } from "@/lib/supabase/session";
 
 type WishRow = {
   id: string;
@@ -18,7 +19,7 @@ export default async function WishesPage() {
   const userId = authData?.claims.sub;
 
   if (!userId) {
-    redirect("/auth");
+    redirect(getSessionRefreshPath("/wishes"));
   }
 
   const { data: membership } = await supabase

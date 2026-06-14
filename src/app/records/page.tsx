@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { RecordsView, type RecordItem } from "@/components/records-view";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionRefreshPath } from "@/lib/supabase/session";
 
 type DailyRecordRow = {
   id: string;
@@ -30,7 +31,9 @@ export default async function RecordsPage({
   const userId = authData?.claims.sub;
 
   if (!userId) {
-    redirect("/auth");
+    redirect(
+      getSessionRefreshPath(compose === "1" ? "/records?compose=1" : "/records"),
+    );
   }
 
   const { data: membership } = await supabase
