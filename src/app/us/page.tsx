@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { AccountSettings } from "@/components/account-settings";
+import { InstallAppCard } from "@/components/install-app-card";
 import { InviteCodeCard } from "@/components/invite-code-card";
 import { PageHeader } from "@/components/page-header";
 import { SoftCard } from "@/components/soft-card";
@@ -146,6 +147,8 @@ export default async function UsPage() {
         inviteCode={space.invite_code}
         hasPartner={hasPartner}
       />
+
+      <InstallAppCard />
 
       <AccountSettings
         userId={userId}
