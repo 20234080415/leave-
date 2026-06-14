@@ -54,12 +54,29 @@ export default async function RecordsPage({
 
   const rows = (data ?? []) as DailyRecordRow[];
   const authorIds = [...new Set(rows.map((record) => record.author_id))];
-  const { data: profileData } = authorIds.length
-    ? await supabase
-        .from("profiles")
-        .select("id, nickname, avatar_url")
-        .in("id", authorIds)
-    : { data: [] };
+  const imagePaths = rows
+    .map((record) => record.image_url)
+    .filter((path): path is string => Boolean(path));
+  const [profileResult, signedImageResult] = await Promise.all([
+    authorIds.length
+      ? supabase
+          .from("profiles")
+          .select("id, nickname, avatar_url")
+          .in("id", authorIds)
+      : Promise.resolve({ data: [] }),
+    imagePaths.length
+      ? supabase.storage
+          .from("record-images")
+          .createSignedUrls(imagePaths, 60 * 60)
+      : Promise.resolve({ data: [] }),
+  ]);
+  const profileData = profileResult.data;
+  const signedImages = new Map(
+    (signedImageResult.data ?? []).map((image) => [
+      image.path,
+      image.signedUrl,
+    ]),
+  );
 
   const profiles = new Map(
     ((profileData ?? []) as ProfileRow[]).map((profile) => [
@@ -68,17 +85,8 @@ export default async function RecordsPage({
     ]),
   );
 
-  const records: RecordItem[] = await Promise.all(
-    rows.map(async (record) => {
+  const records: RecordItem[] = rows.map((record) => {
       const profile = profiles.get(record.author_id);
-      let imageUrl: string | null = null;
-
-      if (record.image_url) {
-        const { data: signedImage } = await supabase.storage
-          .from("record-images")
-          .createSignedUrl(record.image_url, 60 * 60);
-        imageUrl = signedImage?.signedUrl ?? null;
-      }
 
       return {
         id: record.id,
@@ -88,13 +96,14 @@ export default async function RecordsPage({
         content: record.content,
         mood: record.mood,
         weather: record.weather,
-        imageUrl,
+        imageUrl: record.image_url
+          ? signedImages.get(record.image_url) ?? null
+          : null,
         imagePath: record.image_url,
         visibility: record.visibility,
         createdAt: record.created_at,
       };
-    }),
-  );
+    });
 
   return (
     <RecordsView

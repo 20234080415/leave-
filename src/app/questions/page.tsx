@@ -33,19 +33,23 @@ export default async function QuestionsPage() {
     redirect("/auth");
   }
 
-  const { data: membership } = await supabase
-    .from("space_members")
-    .select("space_id")
-    .eq("user_id", userId)
-    .maybeSingle();
+  const [membershipResult, questionCountResult] = await Promise.all([
+    supabase
+      .from("space_members")
+      .select("space_id")
+      .eq("user_id", userId)
+      .maybeSingle(),
+    supabase
+      .from("question_bank")
+      .select("question_index", { count: "exact", head: true }),
+  ]);
+  const membership = membershipResult.data;
 
   if (!membership) {
     redirect("/onboarding");
   }
 
-  const { count: questionCount, error: countError } = await supabase
-    .from("question_bank")
-    .select("question_index", { count: "exact", head: true });
+  const { count: questionCount, error: countError } = questionCountResult;
 
   if (countError || !questionCount) {
     return (
@@ -92,12 +96,29 @@ export default async function QuestionsPage() {
       .order("created_at", { ascending: true });
     const answers = (answerData ?? []) as QuestionAnswerRow[];
     const userIds = answers.map((answer) => answer.user_id);
-    const { data: profileData } = userIds.length
-      ? await supabase
-          .from("profiles")
-          .select("id, nickname, avatar_url")
-          .in("id", userIds)
-      : { data: [] };
+    const imagePaths = answers
+      .map((answer) => answer.image_url)
+      .filter((path): path is string => Boolean(path));
+    const [profileResult, signedImageResult] = await Promise.all([
+      userIds.length
+        ? supabase
+            .from("profiles")
+            .select("id, nickname, avatar_url")
+            .in("id", userIds)
+        : Promise.resolve({ data: [] }),
+      imagePaths.length
+        ? supabase.storage
+            .from("record-images")
+            .createSignedUrls(imagePaths, 60 * 60)
+        : Promise.resolve({ data: [] }),
+    ]);
+    const profileData = profileResult.data;
+    const signedImages = new Map(
+      (signedImageResult.data ?? []).map((image) => [
+        image.path,
+        image.signedUrl,
+      ]),
+    );
     const profiles = new Map(
       ((profileData ?? []) as ProfileRow[]).map((profile) => [
         profile.id,
@@ -105,17 +126,8 @@ export default async function QuestionsPage() {
       ]),
     );
 
-    revealedAnswers = await Promise.all(
-      answers.map(async (answer) => {
+    revealedAnswers = answers.map((answer) => {
         const profile = profiles.get(answer.user_id);
-        let imageUrl: string | null = null;
-
-        if (answer.image_url) {
-          const { data: signedImage } = await supabase.storage
-            .from("record-images")
-            .createSignedUrl(answer.image_url, 60 * 60);
-          imageUrl = signedImage?.signedUrl ?? null;
-        }
 
         return {
           id: answer.id,
@@ -123,11 +135,12 @@ export default async function QuestionsPage() {
           authorName: profile?.nickname ?? "留白用户",
           avatarUrl: profile?.avatar_url ?? null,
           answer: answer.answer,
-          imageUrl,
+          imageUrl: answer.image_url
+            ? signedImages.get(answer.image_url) ?? null
+            : null,
           createdAt: answer.created_at,
         };
-      }),
-    );
+      });
   }
 
   return (

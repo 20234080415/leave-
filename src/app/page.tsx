@@ -78,55 +78,56 @@ export default async function Home() {
   ]);
 
   const memberIds = memberRows?.map((member) => member.user_id) ?? [];
-  const { data: profileRows } = memberIds.length
-    ? await supabase
-        .from("profiles")
-        .select("id, nickname, avatar_url")
-        .in("id", memberIds)
-    : { data: [] };
+  const records = (todayRecordRows ?? []) as HomeRecord[];
+  const latestRecord = records[0];
+  const questionIndex = questionCount
+    ? getDailyQuestionIndex(questionCount, today)
+    : null;
+  const [profileResult, signedImageResult, questionResult, statusResult] =
+    await Promise.all([
+      memberIds.length
+        ? supabase
+            .from("profiles")
+            .select("id, nickname, avatar_url")
+            .in("id", memberIds)
+        : Promise.resolve({ data: [] }),
+      latestRecord?.image_url
+        ? supabase.storage
+            .from("record-images")
+            .createSignedUrl(latestRecord.image_url, 60 * 60)
+        : Promise.resolve({ data: null }),
+      questionIndex !== null
+        ? supabase
+            .from("question_bank")
+            .select("question")
+            .eq("question_index", questionIndex)
+            .single()
+        : Promise.resolve({ data: null }),
+      questionIndex !== null
+        ? supabase.rpc("get_question_answer_status", {
+            target_question_index: questionIndex,
+          })
+        : Promise.resolve({ data: null }),
+    ]);
+  const profileRows = profileResult.data;
   const profiles = new Map(
     ((profileRows ?? []) as HomeProfile[]).map((profile) => [
       profile.id,
       profile,
     ]),
   );
-  const records = (todayRecordRows ?? []) as HomeRecord[];
   const myRecord = records.find((record) => record.author_id === userId);
   const partnerId = memberIds.find((id) => id !== userId);
   const partnerRecord = partnerId
     ? records.find((record) => record.author_id === partnerId)
     : undefined;
-  const latestRecord = records[0];
   const latestProfile = latestRecord
     ? profiles.get(latestRecord.author_id)
     : undefined;
-  let latestImageUrl: string | null = null;
-
-  if (latestRecord?.image_url) {
-    const { data: signedImage } = await supabase.storage
-      .from("record-images")
-      .createSignedUrl(latestRecord.image_url, 60 * 60);
-    latestImageUrl = signedImage?.signedUrl ?? null;
-  }
-
-  let question: string | null = null;
-  let currentUserAnswered = false;
-
-  if (questionCount) {
-    const questionIndex = getDailyQuestionIndex(questionCount, today);
-    const [{ data: questionRow }, { data: statusRows }] = await Promise.all([
-      supabase
-        .from("question_bank")
-        .select("question")
-        .eq("question_index", questionIndex)
-        .single(),
-      supabase.rpc("get_question_answer_status", {
-        target_question_index: questionIndex,
-      }),
-    ]);
-    question = questionRow?.question ?? null;
-    currentUserAnswered = statusRows?.[0]?.current_user_answered ?? false;
-  }
+  const latestImageUrl = signedImageResult.data?.signedUrl ?? null;
+  const question = questionResult.data?.question ?? null;
+  const currentUserAnswered =
+    statusResult.data?.[0]?.current_user_answered ?? false;
 
   const daysTogether = space
     ? differenceInDays(space.created_at, today) + 1

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { SVGProps } from "react";
 
 type IconProps = SVGProps<SVGSVGElement>;
@@ -16,6 +16,7 @@ const navItems = [
 
 export function BottomNav() {
   const pathname = usePathname();
+  const router = useRouter();
 
   if (pathname.startsWith("/auth") || pathname.startsWith("/onboarding")) {
     return null;
@@ -32,8 +33,10 @@ export function BottomNav() {
             <Link
               key={href}
               href={href}
+              prefetch
               className="bottom-nav__item"
               aria-current={isActive ? "page" : undefined}
+              onPointerDown={() => router.prefetch(href)}
             >
               <span className="bottom-nav__icon">
                 <Icon className="h-5 w-5" aria-hidden="true" />
