@@ -12,18 +12,25 @@ export function AccountSettings({
   nickname,
   spaceId,
   spaceName,
+  hasPartner,
   canEditSpace,
 }: {
   userId: string;
   nickname: string;
   spaceId: string;
   spaceName: string;
+  hasPartner: boolean;
   canEditSpace: boolean;
 }) {
   const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
   const [signOutOpen, setSignOutOpen] = useState(false);
+  const [leaveOpen, setLeaveOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const [spaceAction, setSpaceAction] = useState<"leave" | "delete" | null>(
+    null,
+  );
   const [error, setError] = useState<string | null>(null);
 
   async function signOut() {
@@ -42,6 +49,42 @@ export function AccountSettings({
     router.refresh();
   }
 
+  async function leaveSpace() {
+    setSpaceAction("leave");
+    setError(null);
+    const supabase = createClient();
+    const { error: leaveError } = await supabase.rpc("leave_space");
+
+    if (leaveError) {
+      setError(getSpaceActionError(leaveError.message, "leave"));
+      setSpaceAction(null);
+      setLeaveOpen(false);
+      return;
+    }
+
+    router.replace("/onboarding");
+    router.refresh();
+  }
+
+  async function deleteSpace() {
+    setSpaceAction("delete");
+    setError(null);
+    const supabase = createClient();
+    const { error: deleteError } = await supabase.rpc(
+      "delete_current_space",
+    );
+
+    if (deleteError) {
+      setError(getSpaceActionError(deleteError.message, "delete"));
+      setSpaceAction(null);
+      setDeleteOpen(false);
+      return;
+    }
+
+    router.replace("/onboarding");
+    router.refresh();
+  }
+
   return (
     <>
       <SoftCard className="mt-4">
@@ -49,7 +92,7 @@ export function AccountSettings({
           <div>
             <p className="text-sm font-medium text-ink">账号与空间设置</p>
             <p className="mt-1 text-xs leading-5 text-ink-muted">
-              修改称呼、空间名称，或退出当前账号。
+              修改称呼、空间名称，或整理这段空间关系。
             </p>
           </div>
           <button
@@ -78,6 +121,34 @@ export function AccountSettings({
         >
           {signingOut ? "正在退出…" : "退出登录"}
         </button>
+
+        <div className="mt-5 border-t border-[#eee1dd] pt-5">
+          <p className="text-xs leading-5 text-ink-faint">
+            空间操作不会替你做决定，也不会通知对方催促回应。
+          </p>
+          <div className="mt-3 flex flex-wrap gap-x-5 gap-y-3">
+            {hasPartner ? (
+              <button
+                type="button"
+                className="text-sm text-[#a25550]"
+                onClick={() => setLeaveOpen(true)}
+                disabled={spaceAction !== null}
+              >
+                离开空间
+              </button>
+            ) : null}
+            {canEditSpace ? (
+              <button
+                type="button"
+                className="text-sm text-[#a25550]"
+                onClick={() => setDeleteOpen(true)}
+                disabled={spaceAction !== null}
+              >
+                删除空间
+              </button>
+            ) : null}
+          </div>
+        </div>
       </SoftCard>
 
       {editOpen ? (
@@ -101,6 +172,28 @@ export function AccountSettings({
         pending={signingOut}
         onClose={() => setSignOutOpen(false)}
         onConfirm={() => void signOut()}
+      />
+
+      <ConfirmDialog
+        open={leaveOpen}
+        title="确定要离开这个空间吗？"
+        description="离开后，你将不能再查看这里的内容。共同留下的记录会继续保存在对方的空间里。"
+        confirmLabel="离开空间"
+        cancelLabel="再想想"
+        pending={spaceAction === "leave"}
+        onClose={() => setLeaveOpen(false)}
+        onConfirm={() => void leaveSpace()}
+      />
+
+      <ConfirmDialog
+        open={deleteOpen}
+        title="确定要删掉这个空间吗？"
+        description="这里的记录、愿望和回答都会一起删除，删掉后不会恢复。"
+        confirmLabel="删除空间"
+        cancelLabel="再想想"
+        pending={spaceAction === "delete"}
+        onClose={() => setDeleteOpen(false)}
+        onConfirm={() => void deleteSpace()}
       />
     </>
   );
@@ -234,4 +327,31 @@ function SettingsModal({
       </form>
     </SheetModal>
   );
+}
+
+function getSpaceActionError(
+  message: string,
+  action: "leave" | "delete",
+) {
+  const normalized = message.toLowerCase();
+
+  if (
+    normalized.includes("leave_space") ||
+    normalized.includes("delete_current_space") ||
+    normalized.includes("schema cache")
+  ) {
+    return "空间操作尚未部署，请先执行最新的 Supabase migration。";
+  }
+
+  if (normalized.includes("last member")) {
+    return "这里只剩你一个人了，请使用“删除空间”。";
+  }
+
+  if (normalized.includes("only the space creator")) {
+    return "只有空间创建者可以删除整个空间。";
+  }
+
+  return action === "leave"
+    ? "暂时没有离开成功，请稍后再试。"
+    : "暂时没有删除成功，请稍后再试。";
 }

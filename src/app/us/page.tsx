@@ -77,7 +77,7 @@ export default async function UsPage() {
   const orderedProfiles = memberIds
     .map((id) => profiles.find((profile) => profile.id === id))
     .filter((profile): profile is Profile => Boolean(profile));
-  const hasPartner = orderedProfiles.length === 2;
+  const hasPartner = memberIds.length === 2;
   const currentProfile = profiles.find((profile) => profile.id === userId);
   const daysTogether = differenceInDays(space.created_at, new Date()) + 1;
 
@@ -151,6 +151,7 @@ export default async function UsPage() {
         nickname={currentProfile?.nickname ?? "留白用户"}
         spaceId={space.id}
         spaceName={space.name}
+        hasPartner={hasPartner}
         canEditSpace={space.created_by === userId}
       />
     </>
