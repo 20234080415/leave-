@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { nodeWebSocketTransport } from "@/lib/supabase/node-websocket";
 import { getSupabaseConfig, isSupabaseConfigured } from "@/lib/supabase/config";
 
 const publicPaths = ["/auth", "/auth/callback", "/auth/confirm"];
@@ -13,6 +14,9 @@ export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(url, key, {
+    realtime: {
+      transport: nodeWebSocketTransport,
+    },
     cookies: {
       getAll() {
         return request.cookies.getAll();
