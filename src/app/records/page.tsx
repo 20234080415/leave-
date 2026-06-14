@@ -19,7 +19,12 @@ type ProfileRow = {
   avatar_url: string | null;
 };
 
-export default async function RecordsPage() {
+export default async function RecordsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ compose?: string }>;
+}) {
+  const { compose } = await searchParams;
   const supabase = await createClient();
   const { data: authData } = await supabase.auth.getClaims();
   const userId = authData?.claims.sub;
@@ -95,6 +100,7 @@ export default async function RecordsPage() {
       records={records}
       userId={userId}
       spaceId={membership.space_id}
+      initialComposerOpen={compose === "1"}
       loadError={
         error
           ? "记录功能尚未部署，请先执行最新的 Supabase migration。"

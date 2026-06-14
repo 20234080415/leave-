@@ -92,18 +92,22 @@ export function WishesView({
             ☆
           </div>
           <h2 className="mt-4 text-lg font-medium text-ink">
-            这里还留着一些可能
+            {filter === "全部" ? "这里还留着一些可能" : `还没有“${filter}”的愿望`}
           </h2>
           <p className="mt-2 text-sm text-ink-muted">
-            想到想一起做的事，就先把它放进来。
+            {filter === "全部"
+              ? "想到想一起做的事，就轻轻放在这里。"
+              : "愿望慢慢走到哪里都可以，不需要赶进度。"}
           </p>
-          <button
-            type="button"
-            className="soft-button mt-6"
-            onClick={() => setIsOpen(true)}
-          >
-            新建愿望
-          </button>
+          {filter === "全部" ? (
+            <button
+              type="button"
+              className="soft-button mt-6"
+              onClick={() => setIsOpen(true)}
+            >
+              记下一个愿望
+            </button>
+          ) : null}
         </SoftCard>
       )}
 

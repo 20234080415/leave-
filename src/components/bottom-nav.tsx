@@ -35,7 +35,9 @@ export function BottomNav() {
               className="bottom-nav__item"
               aria-current={isActive ? "page" : undefined}
             >
-              <Icon className="h-[22px] w-[22px]" aria-hidden="true" />
+              <span className="bottom-nav__icon">
+                <Icon className="h-5 w-5" aria-hidden="true" />
+              </span>
               <span>{label}</span>
             </Link>
           );

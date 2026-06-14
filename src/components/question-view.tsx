@@ -62,7 +62,7 @@ export function QuestionView({
         <div className="absolute -bottom-10 -left-8 h-28 w-28 rounded-full bg-[#f7e9df]/80" />
         <span className="relative text-3xl text-rose">“</span>
         <h1 className="relative mt-3 text-[24px] font-medium leading-[1.65] tracking-[-0.02em] text-ink">
-          {question ?? "今天的问题正在路上。"}
+          {question ?? "今天先留一会儿白，也很好。"}
         </h1>
         <div className="relative mt-7 flex items-center justify-between">
           <p className="text-sm text-ink-faint">{questionDate}</p>
@@ -309,7 +309,7 @@ function WaitingCard({ memberCount }: { memberCount: number }) {
       </div>
       <h2 className="mt-4 text-lg font-medium text-ink">答案已经留好了</h2>
       <p className="mx-auto mt-2 max-w-[280px] text-sm leading-6 text-ink-muted">
-        答案已记录，等待对方回答。两个人都写下后，内容会一起出现。
+        你的答案已经安静收好。对方想写的时候再写，两份内容会在那之后一起出现。
       </p>
       {memberCount < 2 ? (
         <p className="mt-4 text-xs text-ink-faint">

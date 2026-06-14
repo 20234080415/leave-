@@ -242,7 +242,7 @@ export function WishDetail({ wish }: { wish: WishDetailData }) {
 
         {steps.length === 0 ? (
           <p className="mt-6 text-center text-sm leading-6 text-ink-faint">
-            还没有步骤，可以先从一件很小的事开始。
+            暂时不拆成步骤也没关系，想清楚一点时再慢慢添加。
           </p>
         ) : null}
 
@@ -278,7 +278,7 @@ export function WishDetail({ wish }: { wish: WishDetailData }) {
             所有步骤都完成了
           </h2>
           <p className="mt-2 text-sm leading-6 text-ink-muted">
-            要不要把这个愿望标记为“已完成”？
+            可以把它标记为“已完成”，也可以先让它在这里停一会儿。
           </p>
           <button
             type="button"

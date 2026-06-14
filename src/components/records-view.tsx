@@ -24,14 +24,16 @@ export function RecordsView({
   records,
   userId,
   spaceId,
+  initialComposerOpen = false,
   loadError,
 }: {
   records: RecordItem[];
   userId: string;
   spaceId: string;
+  initialComposerOpen?: boolean;
   loadError: string | null;
 }) {
-  const [composerOpen, setComposerOpen] = useState(false);
+  const [composerOpen, setComposerOpen] = useState(initialComposerOpen);
   const [filter, setFilter] = useState<Filter>("all");
 
   const visibleRecords = useMemo(() => {
@@ -93,18 +95,28 @@ export function RecordsView({
             ✎
           </div>
           <h2 className="mt-4 text-lg font-medium text-ink">
-            还没有故事呢，写下今天吧
+            {filter === "all"
+              ? "这里还安静地空着"
+              : filter === "mine"
+                ? "你还没有留下自己的记录"
+                : "还没有带图片的记录"}
           </h2>
           <p className="mt-2 text-sm text-ink-muted">
-            不必写很多，一句话也能留住此刻。
+            {filter === "all"
+              ? "不用特意准备，想起什么时再来写一点。"
+              : filter === "mine"
+                ? "不着急，哪天有想记住的瞬间再写。"
+                : "文字本身也很好，照片可以以后再慢慢添。"}
           </p>
-          <button
-            type="button"
-            className="soft-button mt-6"
-            onClick={() => setComposerOpen(true)}
-          >
-            写下今天
-          </button>
+          {filter === "all" ? (
+            <button
+              type="button"
+              className="soft-button mt-6"
+              onClick={() => setComposerOpen(true)}
+            >
+              写下今天
+            </button>
+          ) : null}
         </SoftCard>
       )}
 

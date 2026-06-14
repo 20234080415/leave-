@@ -102,7 +102,7 @@ export default async function UsPage() {
         <p className="mx-auto mt-3 max-w-[280px] text-sm leading-6 text-ink-muted">
           {hasPartner
             ? "记录不要求回应，只把想留下的日常放在这里。"
-            : "复制下方邀请码，对方加入后就能共享这个空间。"}
+            : "不着急。准备好时，把下方邀请码交给想一起留在这里的人。"}
         </p>
       </SoftCard>
 

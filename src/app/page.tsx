@@ -14,7 +14,7 @@ export default function Home() {
               在一起第 365 天
             </h1>
             <p className="mt-2 text-sm text-ink-muted">
-              今天，也轻轻地记下吧。
+              有想留下的，就写一点。
             </p>
           </div>
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/70 text-xl text-rose-deep shadow-sm">
@@ -24,6 +24,20 @@ export default function Home() {
       </header>
 
       <section className="grid gap-4">
+        <Link
+          href="/records?compose=1"
+          className="group flex min-h-[72px] items-center justify-between rounded-[24px] bg-rose-deep px-5 text-white shadow-[0_14px_32px_rgb(169_104_101_/_24%)] transition active:scale-[0.985] active:shadow-[0_8px_20px_rgb(169_104_101_/_18%)]"
+          aria-label="写下今天"
+        >
+          <div>
+            <p className="text-lg font-medium">写下今天</p>
+            <p className="mt-1 text-xs text-white/70">一句话，也可以好好留住此刻</p>
+          </div>
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-xl transition group-active:translate-x-0.5">
+            →
+          </span>
+        </Link>
+
         <div className="grid grid-cols-2 gap-3">
           <SoftCard className="min-h-36 bg-[#fff8f7]">
             <div className="flex items-center justify-between">
@@ -33,10 +47,10 @@ export default function Home() {
             <p className="mt-4 text-sm text-ink-muted">我的今天</p>
             <p className="mt-1 font-medium leading-6 text-ink">还留着一小片空白</p>
             <Link
-              href="/records"
+              href="/records?compose=1"
               className="mt-3 inline-block text-xs text-rose-deep"
             >
-              去写一点 →
+              写一点 →
             </Link>
           </SoftCard>
           <SoftCard className="min-h-36 bg-[#fffaf4]">
