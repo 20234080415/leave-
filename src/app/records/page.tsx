@@ -89,6 +89,7 @@ export default async function RecordsPage({
         mood: record.mood,
         weather: record.weather,
         imageUrl,
+        imagePath: record.image_url,
         visibility: record.visibility,
         createdAt: record.created_at,
       };

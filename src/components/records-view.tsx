@@ -1,9 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/page-header";
 import { RecordComposer } from "@/components/record-composer";
 import { SoftCard } from "@/components/soft-card";
+import { createClient } from "@/lib/supabase/client";
 
 export type RecordItem = {
   id: string;
@@ -14,6 +16,7 @@ export type RecordItem = {
   mood: string | null;
   weather: string | null;
   imageUrl: string | null;
+  imagePath: string | null;
   visibility: "shared" | "private";
   createdAt: string;
 };
@@ -33,7 +36,11 @@ export function RecordsView({
   initialComposerOpen?: boolean;
   loadError: string | null;
 }) {
+  const router = useRouter();
   const [composerOpen, setComposerOpen] = useState(initialComposerOpen);
+  const [editingRecord, setEditingRecord] = useState<RecordItem | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
 
   const visibleRecords = useMemo(() => {
@@ -48,6 +55,49 @@ export function RecordsView({
     return records;
   }, [filter, records, userId]);
 
+  function openComposer() {
+    setEditingRecord(null);
+    setComposerOpen(true);
+  }
+
+  function editRecord(record: RecordItem) {
+    setEditingRecord(record);
+    setComposerOpen(true);
+  }
+
+  async function deleteRecord(record: RecordItem) {
+    if (!window.confirm("确定删除这条记录吗？删除后无法恢复。")) {
+      return;
+    }
+
+    setDeletingId(record.id);
+    setActionError(null);
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("daily_records")
+      .delete()
+      .eq("id", record.id);
+
+    if (error) {
+      setActionError("这条记录暂时没有删除成功，请稍后再试。");
+      setDeletingId(null);
+      return;
+    }
+
+    if (record.imagePath) {
+      const { error: storageError } = await supabase.storage
+        .from("record-images")
+        .remove([record.imagePath]);
+
+      if (storageError) {
+        setActionError("记录已删除，但图片清理没有完成。");
+      }
+    }
+
+    setDeletingId(null);
+    router.refresh();
+  }
+
   return (
     <>
       <PageHeader
@@ -58,7 +108,7 @@ export function RecordsView({
           <button
             type="button"
             className="soft-button shrink-0 px-4"
-            onClick={() => setComposerOpen(true)}
+            onClick={openComposer}
           >
             写下今天
           </button>
@@ -83,12 +133,27 @@ export function RecordsView({
         ))}
       </div>
 
+      {actionError ? (
+        <p
+          role="alert"
+          className="mb-4 rounded-2xl bg-[#fff0ee] px-4 py-3 text-sm leading-6 text-[#a25550]"
+        >
+          {actionError}
+        </p>
+      ) : null}
+
       {loadError ? (
         <SoftCard className="border border-[#efd2cd] bg-[#fff7f5]">
           <p className="text-sm leading-6 text-[#a25550]">{loadError}</p>
         </SoftCard>
       ) : visibleRecords.length ? (
-        <RecordTimeline records={visibleRecords} userId={userId} />
+        <RecordTimeline
+          records={visibleRecords}
+          userId={userId}
+          deletingId={deletingId}
+          onEdit={editRecord}
+          onDelete={deleteRecord}
+        />
       ) : (
         <SoftCard className="py-12 text-center">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#f6e6e3] text-2xl text-rose-deep">
@@ -112,7 +177,7 @@ export function RecordsView({
             <button
               type="button"
               className="soft-button mt-6"
-              onClick={() => setComposerOpen(true)}
+              onClick={openComposer}
             >
               写下今天
             </button>
@@ -120,12 +185,16 @@ export function RecordsView({
         </SoftCard>
       )}
 
-      <RecordComposer
-        open={composerOpen}
-        onClose={() => setComposerOpen(false)}
-        spaceId={spaceId}
-        userId={userId}
-      />
+      {composerOpen ? (
+        <RecordComposer
+          key={editingRecord?.id ?? "new"}
+          open
+          onClose={() => setComposerOpen(false)}
+          spaceId={spaceId}
+          userId={userId}
+          record={editingRecord}
+        />
+      ) : null}
     </>
   );
 }
@@ -133,9 +202,15 @@ export function RecordsView({
 function RecordTimeline({
   records,
   userId,
+  deletingId,
+  onEdit,
+  onDelete,
 }: {
   records: RecordItem[];
   userId: string;
+  deletingId: string | null;
+  onEdit: (record: RecordItem) => void;
+  onDelete: (record: RecordItem) => void;
 }) {
   return (
     <section className="relative grid gap-5 pl-5">
@@ -182,6 +257,26 @@ function RecordTimeline({
                   alt="记录中的图片"
                   className="h-full w-full object-cover"
                 />
+              </div>
+            ) : null}
+            {record.authorId === userId ? (
+              <div className="mt-5 flex justify-end gap-2 border-t border-[#eee3df] pt-4">
+                <button
+                  type="button"
+                  className="rounded-full bg-[#f5ece9] px-4 py-2 text-xs text-ink-muted"
+                  onClick={() => onEdit(record)}
+                  disabled={deletingId === record.id}
+                >
+                  编辑
+                </button>
+                <button
+                  type="button"
+                  className="rounded-full px-4 py-2 text-xs text-[#a25550]"
+                  onClick={() => onDelete(record)}
+                  disabled={deletingId === record.id}
+                >
+                  {deletingId === record.id ? "正在删除…" : "删除"}
+                </button>
               </div>
             ) : null}
           </SoftCard>

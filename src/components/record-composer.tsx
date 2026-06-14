@@ -20,20 +20,33 @@ export function RecordComposer({
   onClose,
   spaceId,
   userId,
+  record,
 }: {
   open: boolean;
   onClose: () => void;
   spaceId: string;
   userId: string;
+  record?: {
+    id: string;
+    content: string;
+    weather: string | null;
+    mood: string | null;
+    imageUrl: string | null;
+    imagePath: string | null;
+    visibility: "shared" | "private";
+  } | null;
 }) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [content, setContent] = useState("");
-  const [weather, setWeather] = useState("晴");
-  const [mood, setMood] = useState("平静");
-  const [visibility, setVisibility] = useState<"shared" | "private">("shared");
+  const [content, setContent] = useState(record?.content ?? "");
+  const [weather, setWeather] = useState(record?.weather ?? "晴");
+  const [mood, setMood] = useState(record?.mood ?? "平静");
+  const [visibility, setVisibility] = useState<"shared" | "private">(
+    record?.visibility ?? "shared",
+  );
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [removeExistingImage, setRemoveExistingImage] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -74,6 +87,9 @@ export function RecordComposer({
     }
     setFile(null);
     setPreviewUrl(null);
+    if (record?.imagePath) {
+      setRemoveExistingImage(true);
+    }
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -119,17 +135,31 @@ export function RecordComposer({
       }
     }
 
-    const { error: insertError } = await supabase.from("daily_records").insert({
-      space_id: spaceId,
-      author_id: userId,
-      content: normalizedContent,
-      mood,
-      weather,
-      image_url: imagePath,
-      visibility,
-    });
+    const nextImagePath = imagePath
+      ?? (removeExistingImage ? null : record?.imagePath ?? null);
+    const mutation = record
+      ? supabase
+          .from("daily_records")
+          .update({
+            content: normalizedContent,
+            mood,
+            weather,
+            image_url: nextImagePath,
+            visibility,
+          })
+          .eq("id", record.id)
+      : supabase.from("daily_records").insert({
+          space_id: spaceId,
+          author_id: userId,
+          content: normalizedContent,
+          mood,
+          weather,
+          image_url: nextImagePath,
+          visibility,
+        });
+    const { error: mutationError } = await mutation;
 
-    if (insertError) {
+    if (mutationError) {
       let cleanupFailed = false;
 
       if (imagePath) {
@@ -142,10 +172,26 @@ export function RecordComposer({
       setError(
         cleanupFailed
           ? "记录没有创建，但图片清理失败。请稍后重试或联系管理员。"
-          : getRecordErrorMessage(insertError.message),
+          : getRecordErrorMessage(mutationError.message, Boolean(record)),
       );
       setSaving(false);
       return;
+    }
+
+    if (
+      record?.imagePath
+      && record.imagePath !== nextImagePath
+    ) {
+      const { error: cleanupError } = await supabase.storage
+        .from("record-images")
+        .remove([record.imagePath]);
+
+      if (cleanupError) {
+        setError("记录已保存，但旧图片清理没有完成。");
+        setSaving(false);
+        router.refresh();
+        return;
+      }
     }
 
     resetForm();
@@ -159,6 +205,7 @@ export function RecordComposer({
     setWeather("晴");
     setMood("平静");
     setVisibility("shared");
+    setRemoveExistingImage(false);
     setError(null);
     removeImage();
   }
@@ -172,8 +219,12 @@ export function RecordComposer({
   return (
     <SheetModal
       open={open}
-      title="写下今天"
-      description="一段话和一张图片，就足够留住今天。"
+      title={record ? "编辑这条记录" : "写下今天"}
+      description={
+        record
+          ? "可以修改内容、图片与分享范围。"
+          : "一段话和一张图片，就足够留住今天。"
+      }
       onClose={closeComposer}
     >
       <form className="grid gap-5" onSubmit={handleSubmit}>
@@ -194,11 +245,11 @@ export function RecordComposer({
 
         <div>
           <span className="field-label">一张图片</span>
-          {previewUrl ? (
+          {previewUrl || (record?.imageUrl && !removeExistingImage) ? (
             <div className="relative h-48 overflow-hidden rounded-[20px] bg-[#f3e9e5]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={previewUrl}
+                src={previewUrl ?? record?.imageUrl ?? ""}
                 alt="所选图片预览"
                 className="h-full w-full object-cover"
               />
@@ -291,7 +342,13 @@ export function RecordComposer({
           className="soft-button w-full disabled:cursor-not-allowed disabled:opacity-60"
           disabled={saving}
         >
-          {saving ? (file ? "正在上传并保存…" : "正在保存…") : "保存这一天"}
+          {saving
+            ? file
+              ? "正在上传并保存…"
+              : "正在保存…"
+            : record
+              ? "保存修改"
+              : "保存这一天"}
         </button>
       </form>
     </SheetModal>
@@ -376,7 +433,7 @@ function getUploadErrorMessage(message: string) {
   return "图片上传失败，记录没有创建，请稍后再试。";
 }
 
-function getRecordErrorMessage(message: string) {
+function getRecordErrorMessage(message: string, editing = false) {
   const normalized = message.toLowerCase();
 
   if (
@@ -384,8 +441,12 @@ function getRecordErrorMessage(message: string) {
     normalized.includes("schema cache") ||
     normalized.includes("does not exist")
   ) {
-    return "记录功能尚未部署，图片已清理，记录没有创建。";
+    return editing
+      ? "记录功能尚未部署，修改没有保存。"
+      : "记录功能尚未部署，图片已清理，记录没有创建。";
   }
 
-  return "记录保存失败，已清理上传图片，请稍后再试。";
+  return editing
+    ? "记录修改没有保存成功，请稍后再试。"
+    : "记录保存失败，已清理上传图片，请稍后再试。";
 }
