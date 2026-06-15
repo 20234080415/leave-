@@ -34,92 +34,65 @@ export default async function AdminPage() {
   }
 
   return (
-    <div className="fixed inset-0 z-[100] overflow-y-auto bg-[#f7f2ef] text-ink">
-      <div className="mx-auto min-h-full max-w-[1440px] px-4 pb-16 pt-[max(24px,env(safe-area-inset-top))] sm:px-6 lg:px-10">
-        <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+    <div className="admin-page fixed inset-0 z-[100] overflow-y-auto bg-[#f7f7f8] text-[#27272a]">
+      <div className="mx-auto min-h-full w-full max-w-[1600px] px-4 pb-16 pt-[max(24px,env(safe-area-inset-top))] sm:px-8 lg:px-10 xl:px-12">
+        <header className="flex flex-col gap-5 border-b border-[#e4e4e7] pb-6 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs font-medium tracking-[0.2em] text-rose-deep">
-              DEVELOPMENT ONLY
-            </p>
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-[#65a30d]" />
+              <p className="text-xs font-medium uppercase tracking-[0.14em] text-[#71717a]">
+                Development environment
+              </p>
+            </div>
             <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">
               Leave Admin
             </h1>
-            <p className="mt-2 text-sm text-ink-muted sm:text-base">
-              观察留白是否真的在被使用
-            </p>
-            <p className="mt-3 text-xs text-ink-faint">
-              最后更新：{formatDateTime(data.updatedAt)}
-            </p>
+            <div className="mt-2 flex flex-col gap-1 text-sm text-[#71717a] sm:flex-row sm:items-center sm:gap-3">
+              <span>观察留白是否真的在被使用</span>
+              <span className="hidden text-[#d4d4d8] sm:inline">•</span>
+              <span>更新于 {formatDateTime(data.updatedAt)}</span>
+            </div>
           </div>
           <RefreshButton />
         </header>
 
-        <section className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <section className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
           {data.metrics.map((metric) => (
             <MetricCard key={metric.label} metric={metric} />
           ))}
         </section>
 
-        <div className="mt-6 grid gap-6 xl:grid-cols-[0.82fr_1.18fr]">
-          <SectionCard
-            eyebrow="CONVERSION"
+        <div className="mt-6 grid gap-5 md:grid-cols-2">
+          <Panel
+            eyebrow="Conversion"
             title="用户漏斗"
-            description="快速看见用户在哪一步停了下来"
+            description="快速定位关键行为的流失位置"
           >
-            <div className="mt-6 space-y-3">
-              {data.funnel.map((step, index) => {
-                const max = Math.max(data.funnel[0]?.value ?? 0, 1);
-                const width = Math.max(28, (step.value / max) * 100);
+            <Funnel data={data.funnel} />
+          </Panel>
 
-                return (
-                  <div key={step.label}>
-                    <div
-                      className="mx-auto rounded-2xl border border-[#eadedb] bg-gradient-to-r from-[#fff8f6] to-[#f5e5e2] px-4 py-3"
-                      style={{ width: `${width}%` }}
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="text-sm font-medium">{step.label}</span>
-                        <span className="text-lg font-semibold">{step.value}</span>
-                      </div>
-                    </div>
-                    {index < data.funnel.length - 1 ? (
-                      <div className="flex h-8 items-center justify-center gap-2 text-xs text-ink-faint">
-                        <span>↓</span>
-                        <span>
-                          {data.funnel[index + 1]?.conversion ?? 0}% 转化
-                        </span>
-                      </div>
-                    ) : null}
-                  </div>
-                );
-              })}
-            </div>
-          </SectionCard>
-
-          <SectionCard
-            eyebrow="LAST 30 DAYS"
+          <Panel
+            eyebrow="Last 30 days"
             title="内容增长趋势"
             description="记录、愿望与时间胶囊的每日新增"
           >
-            <div className="mt-4">
-              <GrowthChart data={data.growth} />
-            </div>
-          </SectionCard>
+            <GrowthChart data={data.growth} />
+          </Panel>
         </div>
 
-        <div className="mt-6 grid gap-6 xl:grid-cols-[0.72fr_1.28fr]">
-          <SectionCard
-            eyebrow="CONTENT MIX"
+        <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-[minmax(360px,0.7fr)_minmax(0,1.3fr)]">
+          <Panel
+            eyebrow="Content mix"
             title="内容构成"
-            description="用户真正偏爱的表达方式"
+            description="用户偏爱的内容类型"
           >
             <CompositionChart data={data.composition} />
-          </SectionCard>
+          </Panel>
 
-          <SectionCard
-            eyebrow="SPACE HEALTH"
+          <Panel
+            eyebrow="Space health"
             title="健康度监控"
-            description="按最近 7 天内容行为自动判断"
+            description="根据最近 7 天的内容行为自动判断"
           >
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
               <HealthCard
@@ -141,103 +114,142 @@ export default async function AdminPage() {
                 tone="red"
               />
             </div>
-          </SectionCard>
+          </Panel>
         </div>
 
-        <section className="mt-6">
-          <SectionCard
-            eyebrow="TOP SPACES"
+        <section className="mt-5">
+          <Panel
+            eyebrow="Top spaces"
             title="活跃空间排行榜"
-            description="按记录、愿望和胶囊总量排序"
+            description="按记录、愿望和时间胶囊总量排序"
+            flush
           >
-            <div className="mt-5 grid gap-3 lg:grid-cols-2">
-              {data.activeSpaces.length ? (
-                data.activeSpaces.map((space, index) => (
-                  <article
-                    key={space.id}
-                    className="rounded-[22px] border border-[#eee3df] bg-white/65 p-4"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-xs text-rose-deep">#{index + 1}</p>
-                        <h3 className="mt-1 truncate font-medium">
-                          {space.name}
-                        </h3>
-                      </div>
-                      <span className="rounded-full bg-[#f3e5e2] px-3 py-1 text-xs text-rose-deep">
-                        {space.totalContent} 条内容
-                      </span>
-                    </div>
-                    <div className="mt-4 grid grid-cols-4 gap-2 text-center">
-                      <MiniStat label="成员" value={space.memberCount} />
-                      <MiniStat label="记录" value={space.recordCount} />
-                      <MiniStat label="愿望" value={space.wishCount} />
-                      <MiniStat label="胶囊" value={space.capsuleCount} />
-                    </div>
-                    <p className="mt-4 text-xs text-ink-faint">
-                      最近活跃：
-                      {space.lastActiveAt
-                        ? formatRelativeTime(space.lastActiveAt)
-                        : "尚未产生内容"}
-                    </p>
-                  </article>
-                ))
-              ) : (
-                <EmptyState text="还没有空间数据" />
-              )}
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[760px] border-collapse text-left text-sm">
+                <thead>
+                  <tr className="border-b border-[#e4e4e7] bg-[#fafafa] text-xs font-medium text-[#71717a]">
+                    <TableHead className="w-16">排名</TableHead>
+                    <TableHead>空间</TableHead>
+                    <TableHead align="right">成员</TableHead>
+                    <TableHead align="right">记录</TableHead>
+                    <TableHead align="right">愿望</TableHead>
+                    <TableHead align="right">胶囊</TableHead>
+                    <TableHead align="right">内容总量</TableHead>
+                    <TableHead>最近活跃</TableHead>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.activeSpaces.map((space, index) => (
+                    <tr
+                      key={space.id}
+                      className="border-b border-[#eeeeef] last:border-0 hover:bg-[#fafafa]"
+                    >
+                      <TableCell className="font-medium text-[#a1a1aa]">
+                        {index + 1}
+                      </TableCell>
+                      <TableCell className="max-w-[280px] truncate font-medium text-[#27272a]">
+                        {space.name}
+                      </TableCell>
+                      <TableCell align="right">{space.memberCount}</TableCell>
+                      <TableCell align="right">{space.recordCount}</TableCell>
+                      <TableCell align="right">{space.wishCount}</TableCell>
+                      <TableCell align="right">{space.capsuleCount}</TableCell>
+                      <TableCell align="right">
+                        <strong>{space.totalContent}</strong>
+                      </TableCell>
+                      <TableCell className="text-[#71717a]">
+                        {space.lastActiveAt
+                          ? formatRelativeTime(space.lastActiveAt)
+                          : "尚未产生内容"}
+                      </TableCell>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {data.activeSpaces.length === 0 ? (
+                <EmptyTable text="还没有空间数据" />
+              ) : null}
             </div>
-          </SectionCard>
+          </Panel>
         </section>
 
-        <div className="mt-6 grid gap-6 xl:grid-cols-2">
-          <SectionCard
-            eyebrow="LATEST CONTENT"
+        <section className="mt-5">
+          <Panel
+            eyebrow="Latest content"
             title="最近新增内容"
-            description="最新 20 条记录、愿望与胶囊"
+            description="最新 20 条记录、愿望与时间胶囊"
+            flush
           >
-            <div className="mt-5 space-y-3">
-              {data.recentContent.length ? (
-                data.recentContent.map((item) => (
-                  <article
-                    key={item.id}
-                    className="rounded-[20px] border border-[#eee3df] bg-white/60 p-4"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <ContentBadge type={item.type} />
-                      <time className="text-xs text-ink-faint">
-                        {formatRelativeTime(item.createdAt)}
-                      </time>
-                    </div>
-                    <p className="mt-3 line-clamp-2 text-sm leading-6">
-                      {item.preview}
-                    </p>
-                    <p className="mt-2 truncate text-xs text-ink-muted">
-                      {item.spaceName}
-                    </p>
-                  </article>
-                ))
-              ) : (
-                <EmptyState text="还没有新增内容" />
-              )}
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[760px] border-collapse text-left text-sm">
+                <thead>
+                  <tr className="border-b border-[#e4e4e7] bg-[#fafafa] text-xs font-medium text-[#71717a]">
+                    <TableHead className="w-32">类型</TableHead>
+                    <TableHead>内容预览</TableHead>
+                    <TableHead className="w-64">空间</TableHead>
+                    <TableHead className="w-44">创建时间</TableHead>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.recentContent.map((item) => (
+                    <tr
+                      key={item.id}
+                      className="border-b border-[#eeeeef] last:border-0 hover:bg-[#fafafa]"
+                    >
+                      <TableCell>
+                        <ContentBadge type={item.type} />
+                      </TableCell>
+                      <TableCell className="max-w-[600px] truncate font-medium text-[#3f3f46]">
+                        {item.preview}
+                      </TableCell>
+                      <TableCell className="max-w-64 truncate text-[#71717a]">
+                        {item.spaceName}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-[#71717a]">
+                        {formatDateTime(item.createdAt)}
+                      </TableCell>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {data.recentContent.length === 0 ? (
+                <EmptyTable text="还没有新增内容" />
+              ) : null}
             </div>
-          </SectionCard>
+          </Panel>
+        </section>
 
-          <SectionCard
-            eyebrow="SEED USERS"
+        <section className="mt-5">
+          <Panel
+            eyebrow="Seed users"
             title="种子用户追踪"
-            description="方便逐个观察内测用户是否完成关键动作"
+            description="逐个观察内测用户是否完成关键动作"
+            flush
           >
-            <div className="mt-5 space-y-3">
-              {data.seedUsers.length ? (
-                data.seedUsers.map((user) => (
-                  <SeedUserCard key={user.id} user={user} />
-                ))
-              ) : (
-                <EmptyState text="还没有注册用户" />
-              )}
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[860px] border-collapse text-left text-sm">
+                <thead>
+                  <tr className="border-b border-[#e4e4e7] bg-[#fafafa] text-xs font-medium text-[#71717a]">
+                    <TableHead>邮箱</TableHead>
+                    <TableHead align="right">空间数</TableHead>
+                    <TableHead align="right">内容数</TableHead>
+                    <TableHead>邀请状态</TableHead>
+                    <TableHead>对象状态</TableHead>
+                    <TableHead>最后活跃</TableHead>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.seedUsers.map((user) => (
+                    <SeedUserRow key={user.id} user={user} />
+                  ))}
+                </tbody>
+              </table>
+              {data.seedUsers.length === 0 ? (
+                <EmptyTable text="还没有注册用户" />
+              ) : null}
             </div>
-          </SectionCard>
-        </div>
+          </Panel>
+        </section>
       </div>
     </div>
   );
@@ -247,42 +259,86 @@ function MetricCard({ metric }: { metric: AdminMetric }) {
   const Icon = metricIcons[metric.icon];
 
   return (
-    <article className="rounded-[24px] border border-white/80 bg-[rgb(255_253_251_/_88%)] p-4 shadow-[0_16px_40px_rgb(111_78_70_/_7%)] sm:p-5">
-      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#f4e4e1] text-rose-deep">
-        <Icon className="h-5 w-5" />
-      </div>
-      <p className="mt-5 text-xs text-ink-muted">{metric.label}</p>
-      <div className="mt-1 flex items-end justify-between gap-2">
-        <strong className="text-3xl font-semibold tracking-[-0.04em]">
-          {metric.value}
-        </strong>
-        <span className="pb-1 text-xs text-[#648267]">
+    <article className="flex h-[120px] min-w-0 flex-col justify-between rounded-xl border border-[#e4e4e7] bg-white p-4 shadow-[0_1px_2px_rgb(0_0_0_/_3%)]">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#e4e4e7] bg-[#fafafa] text-[#52525b]">
+          <Icon className="h-[18px] w-[18px]" />
+        </div>
+        <span className="rounded-full bg-[#f0fdf4] px-2 py-1 text-[11px] font-medium text-[#3f7d44]">
           +{metric.today} today
         </span>
+      </div>
+      <div className="flex items-end justify-between gap-3">
+        <p className="text-sm font-medium text-[#71717a]">{metric.label}</p>
+        <strong className="text-3xl font-semibold tracking-[-0.04em] text-[#18181b]">
+          {metric.value}
+        </strong>
       </div>
     </article>
   );
 }
 
-function SectionCard({
+function Funnel({
+  data,
+}: {
+  data: Awaited<ReturnType<typeof getAdminDashboardData>>["funnel"];
+}) {
+  const maximum = Math.max(data[0]?.value ?? 0, 1);
+
+  return (
+    <div className="mt-6 grid min-h-[320px] content-center gap-2">
+      {data.map((step, index) => {
+        const width = Math.max(36, (step.value / maximum) * 100);
+
+        return (
+          <div key={step.label}>
+            <div
+              className="rounded-lg border border-[#e4e4e7] bg-[#fafafa] px-4 py-3"
+              style={{ width: `${width}%` }}
+            >
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-sm font-medium">{step.label}</span>
+                <strong>{step.value}</strong>
+              </div>
+            </div>
+            {index < data.length - 1 ? (
+              <div className="flex h-6 items-center gap-2 pl-3 text-[11px] text-[#a1a1aa]">
+                <span>↓</span>
+                <span>{data[index + 1]?.conversion ?? 0}% 转化</span>
+              </div>
+            ) : null}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function Panel({
   eyebrow,
   title,
   description,
   children,
+  flush = false,
 }: {
   eyebrow: string;
   title: string;
   description: string;
   children: React.ReactNode;
+  flush?: boolean;
 }) {
   return (
-    <section className="rounded-[28px] border border-white/80 bg-[rgb(255_253_251_/_88%)] p-5 shadow-[0_18px_45px_rgb(111_78_70_/_7%)] sm:p-6">
-      <p className="text-[11px] font-medium tracking-[0.18em] text-rose-deep">
-        {eyebrow}
-      </p>
-      <h2 className="mt-2 text-xl font-semibold tracking-[-0.02em]">{title}</h2>
-      <p className="mt-1 text-sm text-ink-muted">{description}</p>
-      {children}
+    <section className="min-w-0 overflow-hidden rounded-xl border border-[#e4e4e7] bg-white shadow-[0_1px_2px_rgb(0_0_0_/_3%)]">
+      <div className="border-b border-[#eeeeef] px-5 py-4">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#a1a1aa]">
+          {eyebrow}
+        </p>
+        <div className="mt-1 flex flex-col gap-1 lg:flex-row lg:items-baseline lg:justify-between lg:gap-4">
+          <h2 className="text-lg font-semibold tracking-[-0.02em]">{title}</h2>
+          <p className="text-xs text-[#71717a]">{description}</p>
+        </div>
+      </div>
+      <div className={flush ? "" : "px-5 pb-5"}>{children}</div>
     </section>
   );
 }
@@ -299,26 +355,93 @@ function HealthCard({
   tone: "green" | "yellow" | "red";
 }) {
   const tones = {
-    green: "border-[#dce9dc] bg-[#f2f8f2] text-[#56745a]",
-    yellow: "border-[#eee1bd] bg-[#fbf7e8] text-[#8a7138]",
-    red: "border-[#efd8d5] bg-[#fbefed] text-[#a15e59]",
+    green: "border-[#bbf7d0] bg-[#f0fdf4] text-[#166534]",
+    yellow: "border-[#fde68a] bg-[#fffbeb] text-[#92400e]",
+    red: "border-[#fecaca] bg-[#fef2f2] text-[#991b1b]",
   };
 
   return (
-    <article className={`rounded-[22px] border p-5 ${tones[tone]}`}>
+    <article className={`flex min-h-[150px] flex-col rounded-lg border p-4 ${tones[tone]}`}>
       <p className="text-sm font-medium">{label}</p>
-      <p className="mt-3 text-4xl font-semibold tracking-[-0.05em]">{value}</p>
-      <p className="mt-2 text-xs opacity-75">{description}</p>
+      <p className="mt-auto text-4xl font-semibold tracking-[-0.05em]">{value}</p>
+      <p className="mt-2 text-xs opacity-70">{description}</p>
     </article>
   );
 }
 
-function MiniStat({ label, value }: { label: string; value: number }) {
+function SeedUserRow({ user }: { user: SeedUser }) {
   return (
-    <div className="rounded-xl bg-[#f8f2ef] px-2 py-2">
-      <p className="text-sm font-medium">{value}</p>
-      <p className="mt-0.5 text-[10px] text-ink-faint">{label}</p>
-    </div>
+    <tr className="border-b border-[#eeeeef] last:border-0 hover:bg-[#fafafa]">
+      <TableCell>
+        <p className="max-w-[360px] truncate font-medium text-[#3f3f46]">
+          {user.email}
+        </p>
+        <p className="mt-1 text-[11px] text-[#a1a1aa]">
+          注册于 {formatDate(user.signedUpAt)}
+        </p>
+      </TableCell>
+      <TableCell align="right">{user.spaceName ? 1 : 0}</TableCell>
+      <TableCell align="right">
+        <strong>{user.totalContent}</strong>
+      </TableCell>
+      <TableCell>
+        <StatusBadge
+          active={user.hasInvited}
+          activeText="已邀请"
+          inactiveText="未邀请"
+        />
+      </TableCell>
+      <TableCell>
+        <StatusBadge
+          active={user.partnerJoined}
+          activeText="已加入"
+          inactiveText="未加入"
+        />
+      </TableCell>
+      <TableCell className="whitespace-nowrap text-[#71717a]">
+        {user.lastActiveAt ? formatRelativeTime(user.lastActiveAt) : "暂无行为"}
+      </TableCell>
+    </tr>
+  );
+}
+
+function TableHead({
+  children,
+  align = "left",
+  className = "",
+}: {
+  children: React.ReactNode;
+  align?: "left" | "right";
+  className?: string;
+}) {
+  return (
+    <th
+      className={`whitespace-nowrap px-5 py-3 font-medium ${
+        align === "right" ? "text-right" : "text-left"
+      } ${className}`}
+    >
+      {children}
+    </th>
+  );
+}
+
+function TableCell({
+  children,
+  align = "left",
+  className = "",
+}: {
+  children: React.ReactNode;
+  align?: "left" | "right";
+  className?: string;
+}) {
+  return (
+    <td
+      className={`px-5 py-3.5 ${
+        align === "right" ? "text-right" : "text-left"
+      } ${className}`}
+    >
+      {children}
+    </td>
   );
 }
 
@@ -329,67 +452,50 @@ function ContentBadge({ type }: { type: ContentKind }) {
     capsule: "时间胶囊",
   };
   const styles = {
-    record: "bg-[#f5e2df] text-[#9b5f5b]",
-    wish: "bg-[#f8eddc] text-[#9a733f]",
-    capsule: "bg-[#e8ebf4] text-[#67769a]",
+    record: "border-[#fecdd3] bg-[#fff1f2] text-[#9f1239]",
+    wish: "border-[#fde68a] bg-[#fffbeb] text-[#92400e]",
+    capsule: "border-[#c7d2fe] bg-[#eef2ff] text-[#4338ca]",
   };
 
   return (
-    <span className={`rounded-full px-3 py-1 text-xs ${styles[type]}`}>
+    <span
+      className={`inline-flex rounded-md border px-2 py-1 text-[11px] font-medium ${styles[type]}`}
+    >
       {labels[type]}
     </span>
   );
 }
 
-function SeedUserCard({ user }: { user: SeedUser }) {
+function StatusBadge({
+  active,
+  activeText,
+  inactiveText,
+}: {
+  active: boolean;
+  activeText: string;
+  inactiveText: string;
+}) {
   return (
-    <article className="rounded-[20px] border border-[#eee3df] bg-white/60 p-4">
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-        <p className="truncate text-sm font-medium">{user.email}</p>
-        <span className="text-xs text-ink-faint">
-          注册于 {formatDate(user.signedUpAt)}
-        </span>
-      </div>
-      <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <StatusPill label="创建空间" active={Boolean(user.spaceName)} />
-        <StatusPill label="邀请对象" active={user.hasInvited} />
-        <StatusPill label="对象加入" active={user.partnerJoined} />
-        <div className="rounded-xl bg-[#f8f2ef] px-3 py-2 text-xs">
-          内容 <strong className="ml-1">{user.totalContent}</strong>
-        </div>
-      </div>
-      <div className="mt-3 flex flex-col gap-1 text-xs text-ink-muted sm:flex-row sm:justify-between">
-        <span className="truncate">{user.spaceName ?? "尚未创建或加入空间"}</span>
-        <span>
-          最后活跃：
-          {user.lastActiveAt
-            ? formatRelativeTime(user.lastActiveAt)
-            : "暂无行为"}
-        </span>
-      </div>
-    </article>
-  );
-}
-
-function StatusPill({ label, active }: { label: string; active: boolean }) {
-  return (
-    <div
-      className={`rounded-xl px-3 py-2 text-xs ${
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs ${
         active
-          ? "bg-[#edf5ed] text-[#5f7d63]"
-          : "bg-[#f5f0ed] text-ink-faint"
+          ? "bg-[#f0fdf4] text-[#166534]"
+          : "bg-[#f4f4f5] text-[#71717a]"
       }`}
     >
-      {active ? "✓" : "—"} {label}
-    </div>
+      <span
+        className={`h-1.5 w-1.5 rounded-full ${
+          active ? "bg-[#22c55e]" : "bg-[#a1a1aa]"
+        }`}
+      />
+      {active ? activeText : inactiveText}
+    </span>
   );
 }
 
-function EmptyState({ text }: { text: string }) {
+function EmptyTable({ text }: { text: string }) {
   return (
-    <div className="rounded-[20px] border border-dashed border-[#e5d6d1] px-4 py-10 text-center text-sm text-ink-muted">
-      {text}
-    </div>
+    <div className="px-5 py-12 text-center text-sm text-[#71717a]">{text}</div>
   );
 }
 
@@ -397,14 +503,14 @@ function AdminConfigurationError({ error }: { error: unknown }) {
   const message = error instanceof Error ? error.message : "读取数据失败";
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#f7f2ef] p-5">
-      <div className="w-full max-w-lg rounded-[28px] bg-[#fffdfb] p-7 shadow-[0_20px_60px_rgb(111_78_70_/_10%)]">
-        <p className="text-xs tracking-[0.18em] text-rose-deep">
-          LEAVE ADMIN
+    <div className="admin-page fixed inset-0 z-[100] flex items-center justify-center bg-[#f7f7f8] p-5">
+      <div className="w-full max-w-lg rounded-xl border border-[#e4e4e7] bg-white p-7 shadow-lg">
+        <p className="text-xs font-medium uppercase tracking-[0.14em] text-[#71717a]">
+          Leave Admin
         </p>
         <h1 className="mt-3 text-2xl font-semibold">后台暂时无法读取数据</h1>
-        <p className="mt-3 text-sm leading-7 text-ink-muted">{message}</p>
-        <div className="mt-5 rounded-2xl bg-[#f8f1ee] p-4 text-sm leading-6 text-ink-muted">
+        <p className="mt-3 text-sm leading-7 text-[#71717a]">{message}</p>
+        <div className="mt-5 rounded-lg bg-[#f4f4f5] p-4 text-sm leading-6 text-[#52525b]">
           请确认本地 `.env.local` 已配置 `SUPABASE_SERVICE_ROLE_KEY`，并已执行最新
           Supabase migration。服务角色密钥不会发送到浏览器。
         </div>
@@ -492,7 +598,6 @@ function formatDateTime(value: string) {
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
-    second: "2-digit",
     hour12: false,
   }).format(new Date(value));
 }
@@ -511,21 +616,16 @@ function formatRelativeTime(value: string) {
   const absolute = Math.abs(difference);
   const formatter = new Intl.RelativeTimeFormat("zh-CN", { numeric: "auto" });
 
-  if (absolute < 60 * 1000) {
-    return "刚刚";
-  }
-
+  if (absolute < 60 * 1000) return "刚刚";
   if (absolute < 60 * 60 * 1000) {
     return formatter.format(Math.round(difference / (60 * 1000)), "minute");
   }
-
   if (absolute < 24 * 60 * 60 * 1000) {
     return formatter.format(
       Math.round(difference / (60 * 60 * 1000)),
       "hour",
     );
   }
-
   if (absolute < 7 * 24 * 60 * 60 * 1000) {
     return formatter.format(
       Math.round(difference / (24 * 60 * 60 * 1000)),

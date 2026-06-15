@@ -9,7 +9,6 @@ import {
   LineChart,
   Pie,
   PieChart,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
@@ -30,9 +29,14 @@ const tooltipStyle = {
 
 export function GrowthChart({ data }: { data: GrowthPoint[] }) {
   return (
-    <div className="h-[280px] w-full sm:h-[330px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 16, right: 8, left: -24, bottom: 0 }}>
+    <div className="h-[320px] w-full xl:h-[360px]">
+      <LineChart
+        width={1000}
+        height={360}
+        data={data}
+        margin={{ top: 16, right: 8, left: -24, bottom: 0 }}
+        style={{ width: "100%", height: "100%" }}
+      >
           <defs>
             <linearGradient id="recordGlow" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#b77772" stopOpacity={0.18} />
@@ -93,8 +97,7 @@ export function GrowthChart({ data }: { data: GrowthPoint[] }) {
             dot={false}
             activeDot={{ r: 5 }}
           />
-        </LineChart>
-      </ResponsiveContainer>
+      </LineChart>
     </div>
   );
 }
@@ -108,16 +111,19 @@ export function CompositionChart({
 
   if (total === 0) {
     return (
-      <div className="flex h-[280px] items-center justify-center text-sm text-ink-muted">
+      <div className="flex h-[320px] items-center justify-center text-sm text-[#71717a]">
         还没有内容，第一条记录出现后会在这里形成构成。
       </div>
     );
   }
 
   return (
-    <div className="h-[280px] w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
+    <div className="h-[320px] w-full">
+      <PieChart
+        width={640}
+        height={320}
+        style={{ width: "100%", height: "100%" }}
+      >
           <Pie
             data={data}
             dataKey="value"
@@ -142,8 +148,7 @@ export function CompositionChart({
             }}
             wrapperStyle={{ color: "#776965", fontSize: 12 }}
           />
-        </PieChart>
-      </ResponsiveContainer>
+      </PieChart>
     </div>
   );
 }

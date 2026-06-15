@@ -635,6 +635,12 @@ button {
     margin-left: auto;
   }
 
+  .page-content > .admin-page:first-child {
+    width: 100vw;
+    max-width: none;
+    margin: 0;
+  }
+
   .tablet-book-layout {
     position: relative;
     display: grid;
