@@ -326,6 +326,28 @@ button {
   }
 }
 
+.capsule-reveal {
+  animation: capsule-reveal 520ms ease-out;
+}
+
+@keyframes capsule-reveal {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .capsule-reveal {
+    animation: none;
+  }
+}
+
 @media (min-width: 1025px) {
   :root {
     --app-content-width: 960px;
