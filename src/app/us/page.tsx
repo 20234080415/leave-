@@ -118,21 +118,6 @@ export default async function UsPage() {
               一起走过 {daysTogether} 天
             </p>
           </SoftCard>
-        </>
-      }
-      right={
-        <>
-          <SoftCard className="text-center">
-            <p className="text-xs tracking-[0.16em] text-rose-deep">OUR SPACE</p>
-            <h2 className="mt-3 text-lg font-medium text-ink">
-              {hasPartner ? "两个人已经在这里相遇" : "这里还留着一个位置"}
-            </h2>
-            <p className="mx-auto mt-3 max-w-[280px] text-sm leading-6 text-ink-muted">
-              {hasPartner
-                ? "记录不要求回应，只把想留下的日常放在这里。"
-                : "不着急。准备好时，把下方邀请码交给想一起留在这里的人。"}
-            </p>
-          </SoftCard>
 
           <section className="mt-4 grid grid-cols-3 gap-3">
             <StatCard
@@ -148,6 +133,33 @@ export default async function UsPage() {
               label="相遇的答案"
             />
           </section>
+
+          <SoftCard className="mt-4 bg-[#fbf5f1]">
+            <p className="text-xs tracking-[0.16em] text-rose-deep">
+              OUR CHAPTER
+            </p>
+            <h2 className="mt-3 text-lg font-medium text-ink">
+              第 {daysTogether} 页，还在一起写
+            </h2>
+            <p className="mt-3 text-sm leading-7 text-ink-muted">
+              从 {formatDate(space.created_at)} 开始，这里收下了你们的日常、回答和想一起完成的事。
+            </p>
+          </SoftCard>
+        </>
+      }
+      right={
+        <>
+          <SoftCard className="text-center">
+            <p className="text-xs tracking-[0.16em] text-rose-deep">OUR SPACE</p>
+            <h2 className="mt-3 text-lg font-medium text-ink">
+              {hasPartner ? "两个人已经在这里相遇" : "这里还留着一个位置"}
+            </h2>
+            <p className="mx-auto mt-3 max-w-[280px] text-sm leading-6 text-ink-muted">
+              {hasPartner
+                ? "记录不要求回应，只把想留下的日常放在这里。"
+                : "不着急。准备好时，把下方邀请码交给想一起留在这里的人。"}
+            </p>
+          </SoftCard>
 
           <InviteCodeCard
             inviteCode={space.invite_code}

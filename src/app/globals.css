@@ -316,7 +316,7 @@ button {
   background: #f5e2df;
 }
 
-@media (min-width: 768px) and (max-width: 1024px) {
+@media (min-width: 700px) and (max-width: 1024px) {
   :root {
     --app-content-width: 960px;
   }
@@ -354,7 +354,7 @@ button {
   display: none;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 700px) {
   .page-content {
     padding-right: 24px;
     padding-left: 24px;
@@ -450,8 +450,18 @@ button {
   }
 }
 
-@media (min-width: 768px) and (max-width: 899px) {
+@media (min-width: 700px) and (max-width: 899px) {
   .tablet-book-page {
     padding: 22px;
+  }
+}
+
+@media (orientation: landscape) and (min-width: 700px) {
+  .tablet-book-layout {
+    min-height: calc(100dvh - 112px);
+  }
+
+  .page-content {
+    padding-top: calc(20px + env(safe-area-inset-top));
   }
 }
