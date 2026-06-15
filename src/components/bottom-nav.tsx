@@ -18,7 +18,11 @@ export function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
 
-  if (pathname.startsWith("/auth") || pathname.startsWith("/onboarding")) {
+  if (
+    pathname.startsWith("/auth") ||
+    pathname.startsWith("/onboarding") ||
+    pathname.startsWith("/admin")
+  ) {
     return null;
   }
 

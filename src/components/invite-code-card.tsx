@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { SoftCard } from "@/components/soft-card";
+import { markInviteShared } from "@/app/us/actions";
 
 export function InviteCodeCard({
   inviteCode,
@@ -14,6 +15,7 @@ export function InviteCodeCard({
 
   async function copyInviteCode() {
     await navigator.clipboard.writeText(inviteCode);
+    void markInviteShared().catch(() => undefined);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1600);
   }

@@ -56,7 +56,8 @@ export function CapsuleFloatingButton() {
 
   if (
     pathname.startsWith("/auth") ||
-    pathname.startsWith("/onboarding")
+    pathname.startsWith("/onboarding") ||
+    pathname.startsWith("/admin")
   ) {
     return null;
   }
