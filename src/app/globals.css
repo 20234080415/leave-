@@ -623,6 +623,31 @@ button {
   display: none;
 }
 
+.memory-book-page {
+  width: 100%;
+}
+
+.memory-book-paper {
+  background-image:
+    linear-gradient(rgb(255 253 251 / 96%), rgb(255 250 248 / 96%)),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 31px,
+      rgb(205 176 168 / 4%) 32px
+    );
+}
+
+body.memory-book-exporting [data-export-hide],
+body.memory-book-exporting .bottom-nav,
+body.memory-book-exporting .capsule-floating-layer {
+  display: none !important;
+}
+
+body.memory-book-exporting {
+  background: #f8f3f0;
+}
+
 @media (min-width: 700px) {
   .page-content {
     padding-right: 24px;
@@ -639,6 +664,12 @@ button {
     width: 100vw;
     max-width: none;
     margin: 0;
+  }
+
+  .page-content > .memory-book-page:first-child {
+    max-width: 920px;
+    margin-right: auto;
+    margin-left: auto;
   }
 
   .tablet-book-layout {

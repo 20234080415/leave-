@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AccountSettings } from "@/components/account-settings";
 import { InstallAppCard } from "@/components/install-app-card";
@@ -146,6 +147,32 @@ export default async function UsPage() {
               从 {formatDate(space.created_at)} 开始，这里收下了你们的日常、回答和想一起完成的事。
             </p>
           </SoftCard>
+
+          <Link href="/memory-book" className="mt-4 block">
+            <SoftCard className="group relative overflow-hidden border border-[#efd8d3] bg-gradient-to-br from-[#fffaf8] via-[#f8e8e5] to-[#fffdfb]">
+              <span className="absolute -right-8 -top-10 h-28 w-28 rounded-full bg-white/45" />
+              <div className="relative flex items-center justify-between gap-5">
+                <div>
+                  <p className="text-xs tracking-[0.18em] text-rose-deep">
+                    MEMORY BOOK
+                  </p>
+                  <h2 className="mt-3 text-xl font-medium text-ink">回忆书</h2>
+                  <p className="mt-2 text-sm leading-7 text-ink-muted">
+                    把一起走过的日子，装订成一本书。
+                  </p>
+                  <span className="mt-5 inline-flex min-h-10 items-center rounded-2xl bg-[#ad6b67] px-4 text-sm font-medium text-white shadow-[0_8px_18px_rgb(169_104_101_/_18%)]">
+                    生成回忆书
+                  </span>
+                </div>
+                <span
+                  aria-hidden="true"
+                  className="flex h-24 w-20 shrink-0 rotate-3 items-center justify-center rounded-[10px_18px_18px_10px] border border-white/80 bg-[#dba39e] text-3xl text-white shadow-[8px_12px_24px_rgb(134_82_76_/_18%)] transition-transform group-hover:rotate-1"
+                >
+                  ♡
+                </span>
+              </div>
+            </SoftCard>
+          </Link>
         </>
       }
       right={
