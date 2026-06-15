@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { PageHeader } from "@/components/page-header";
 import { SoftCard } from "@/components/soft-card";
+import { TabletBookLayout } from "@/components/tablet-book-layout";
 import { createClient } from "@/lib/supabase/client";
 
 const maxImageSize = 5 * 1024 * 1024;
@@ -51,46 +52,69 @@ export function QuestionView({
   const isRevealed = answerCount >= 2 && revealedAnswers.length >= 2;
 
   return (
-    <>
-      <PageHeader
-        eyebrow={`QUESTION ${String(questionIndex + 1).padStart(2, "0")}`}
-        title="今天，想问你"
-        description="答案不急着交换，先听听自己的心。"
-      />
+    <TabletBookLayout
+      left={
+        <>
+          <PageHeader
+            eyebrow={`QUESTION ${String(questionIndex + 1).padStart(2, "0")}`}
+            title="今天，想问你"
+            description="答案不急着交换，先听听自己的心。"
+          />
 
-      <SoftCard className="relative overflow-hidden bg-[#fff9f7] px-6 py-9">
-        <div className="absolute -right-7 -top-7 h-28 w-28 rounded-full bg-[#f4dedb]/70" />
-        <div className="absolute -bottom-10 -left-8 h-28 w-28 rounded-full bg-[#f7e9df]/80" />
-        <span className="relative text-3xl text-rose">“</span>
-        <h1 className="relative mt-3 text-[24px] font-medium leading-[1.65] tracking-[-0.02em] text-ink">
-          {question ?? "今天先留一会儿白，也很好。"}
-        </h1>
-        <div className="relative mt-7 flex items-center justify-between">
-          <p className="text-sm text-ink-faint">{questionDate}</p>
-          <span className="paper-label">第 {questionIndex + 1} 题</span>
-        </div>
-      </SoftCard>
+          <SoftCard className="relative overflow-hidden bg-[#fff9f7] px-6 py-9">
+            <div className="absolute -right-7 -top-7 h-28 w-28 rounded-full bg-[#f4dedb]/70" />
+            <div className="absolute -bottom-10 -left-8 h-28 w-28 rounded-full bg-[#f7e9df]/80" />
+            <span className="relative text-3xl text-rose">“</span>
+            <h1 className="relative mt-3 text-[24px] font-medium leading-[1.65] tracking-[-0.02em] text-ink">
+              {question ?? "今天先留一会儿白，也很好。"}
+            </h1>
+            <div className="relative mt-7 flex items-center justify-between">
+              <p className="text-sm text-ink-faint">{questionDate}</p>
+              <span className="paper-label">第 {questionIndex + 1} 题</span>
+            </div>
+          </SoftCard>
 
-      {loadError ? (
-        <SoftCard className="mt-4 border border-[#efd2cd] bg-[#fff7f5]">
-          <p className="text-sm leading-6 text-[#a25550]">{loadError}</p>
-        </SoftCard>
-      ) : isRevealed ? (
-        <RevealedAnswers answers={revealedAnswers} userId={userId} />
-      ) : currentUserAnswered ? (
-        <WaitingCard
-          memberCount={memberCount}
-          questionIndex={questionIndex}
-        />
-      ) : (
-        <AnswerForm
-          spaceId={spaceId}
-          userId={userId}
-          questionIndex={questionIndex}
-          disabled={!question}
-        />
-      )}
-    </>
+          <SoftCard className="book-desktop-only mt-4 bg-[#fbf5f1]">
+            <p className="text-xs tracking-[0.16em] text-rose-deep">
+              ANSWER STATUS
+            </p>
+            <p className="mt-3 text-lg font-medium text-ink">
+              {isRevealed
+                ? "两份答案已经一起揭晓"
+                : currentUserAnswered
+                  ? "你的答案已经收好"
+                  : "等待你写下这一页"}
+            </p>
+            <p className="mt-2 text-sm leading-6 text-ink-muted">
+              当前已有 {answerCount}/{Math.max(memberCount, 2)} 份回答
+            </p>
+          </SoftCard>
+        </>
+      }
+      right={
+        <>
+          {loadError ? (
+            <SoftCard className="border border-[#efd2cd] bg-[#fff7f5]">
+              <p className="text-sm leading-6 text-[#a25550]">{loadError}</p>
+            </SoftCard>
+          ) : isRevealed ? (
+            <RevealedAnswers answers={revealedAnswers} userId={userId} />
+          ) : currentUserAnswered ? (
+            <WaitingCard
+              memberCount={memberCount}
+              questionIndex={questionIndex}
+            />
+          ) : (
+            <AnswerForm
+              spaceId={spaceId}
+              userId={userId}
+              questionIndex={questionIndex}
+              disabled={!question}
+            />
+          )}
+        </>
+      }
+    />
   );
 }
 

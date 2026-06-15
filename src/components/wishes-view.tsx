@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/page-header";
 import { SheetModal } from "@/components/sheet-modal";
 import { SoftCard } from "@/components/soft-card";
+import { TabletBookLayout } from "@/components/tablet-book-layout";
 import { createClient } from "@/lib/supabase/client";
 
 export type WishStatus = "想想中" | "准备中" | "进行中" | "已完成";
@@ -18,6 +19,12 @@ export type WishListItem = {
   targetDate: string | null;
   completedSteps: number;
   totalSteps: number;
+  steps: {
+    id: string;
+    content: string;
+    isDone: boolean;
+    orderIndex: number;
+  }[];
 };
 
 type Filter = "全部" | WishStatus;
@@ -33,6 +40,7 @@ export function WishesView({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState<Filter>("全部");
+  const [selectedWishId, setSelectedWishId] = useState<string | null>(null);
   const visibleWishes = useMemo(
     () =>
       filter === "全部"
@@ -40,86 +48,96 @@ export function WishesView({
         : wishes.filter((wish) => wish.status === filter),
     [filter, wishes],
   );
+  const selectedWish =
+    visibleWishes.find((wish) => wish.id === selectedWishId) ?? null;
 
   return (
     <>
-      <PageHeader
-        eyebrow="SOMEDAY"
-        title="想一起完成的事"
-        description="愿望不设期限，想起来时就向前一点。"
-        action={
-          <button
-            type="button"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-rose-deep text-2xl font-light text-white shadow-[0_8px_20px_rgb(169_104_101_/_22%)]"
-            aria-label="新建愿望"
-            onClick={() => setIsOpen(true)}
-          >
-            +
-          </button>
+      <TabletBookLayout
+        left={
+          <>
+            <PageHeader
+              eyebrow="SOMEDAY"
+              title="想一起完成的事"
+              description="愿望不设期限，想起来时就向前一点。"
+              action={
+                <button
+                  type="button"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-rose-deep text-2xl font-light text-white shadow-[0_8px_20px_rgb(169_104_101_/_22%)]"
+                  aria-label="新建愿望"
+                  onClick={() => setIsOpen(true)}
+                >
+                  +
+                </button>
+              }
+            />
+
+            <div className="mb-6 flex gap-2 overflow-x-auto pb-1">
+              {(["全部", "想想中", "准备中", "进行中", "已完成"] as Filter[]).map(
+                (item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    className="choice-chip shrink-0"
+                    data-selected={filter === item}
+                    onClick={() => setFilter(item)}
+                  >
+                    {item}
+                    {item === "全部" ? ` ${wishes.length}` : ""}
+                  </button>
+                ),
+              )}
+            </div>
+
+            {loadError ? (
+              <SoftCard className="border border-[#efd2cd] bg-[#fff7f5]">
+                <p className="text-sm leading-6 text-[#a25550]">{loadError}</p>
+              </SoftCard>
+            ) : visibleWishes.length ? (
+              <section className="grid gap-4">
+                {visibleWishes.map((wish, index) => (
+                  <WishCard
+                    key={wish.id}
+                    wish={wish}
+                    index={index}
+                    selected={selectedWish?.id === wish.id}
+                    onSelect={() => setSelectedWishId(wish.id)}
+                  />
+                ))}
+                {filter === "全部" && wishes.length <= 2 ? (
+                  <SoftCard className="book-mobile-only mt-1 border border-white/70 bg-[#fbf4f1] py-8 text-center shadow-none">
+                    <p className="text-base font-medium text-ink">
+                      愿望不用很多。
+                    </p>
+                    <p className="mx-auto mt-3 max-w-[260px] whitespace-pre-line text-sm leading-7 text-ink-muted">
+                      {"一个想一起完成的小事，\n也值得被认真放在这里。"}
+                    </p>
+                  </SoftCard>
+                ) : null}
+              </section>
+            ) : (
+              <WishEmptyState filter={filter} onCreate={() => setIsOpen(true)} />
+            )}
+          </>
+        }
+        right={
+          <div className="book-desktop-only">
+            {selectedWish ? (
+              <WishPreview wish={selectedWish} />
+            ) : (
+              <SoftCard className="flex min-h-[420px] flex-col items-center justify-center text-center">
+                <span className="text-3xl text-rose">☆</span>
+                <h2 className="mt-4 text-xl font-medium text-ink">
+                  选一个愿望慢慢展开
+                </h2>
+                <p className="mt-3 max-w-[260px] text-sm leading-7 text-ink-muted">
+                  左页收着想一起完成的事，右页留给细节和一步一步的靠近。
+                </p>
+              </SoftCard>
+            )}
+          </div>
         }
       />
-
-      <div className="mb-6 flex gap-2 overflow-x-auto pb-1">
-        {(["全部", "想想中", "准备中", "进行中", "已完成"] as Filter[]).map(
-          (item) => (
-            <button
-              key={item}
-              type="button"
-              className="choice-chip shrink-0"
-              data-selected={filter === item}
-              onClick={() => setFilter(item)}
-            >
-              {item}
-              {item === "全部" ? ` ${wishes.length}` : ""}
-            </button>
-          ),
-        )}
-      </div>
-
-      {loadError ? (
-        <SoftCard className="border border-[#efd2cd] bg-[#fff7f5]">
-          <p className="text-sm leading-6 text-[#a25550]">{loadError}</p>
-        </SoftCard>
-      ) : visibleWishes.length ? (
-        <section className="grid gap-4">
-          {visibleWishes.map((wish, index) => (
-            <WishCard key={wish.id} wish={wish} index={index} />
-          ))}
-          {filter === "全部" && wishes.length <= 2 ? (
-            <SoftCard className="mt-1 border border-white/70 bg-[#fbf4f1] py-8 text-center shadow-none">
-              <p className="text-base font-medium text-ink">
-                愿望不用很多。
-              </p>
-              <p className="mx-auto mt-3 max-w-[260px] whitespace-pre-line text-sm leading-7 text-ink-muted">
-                {"一个想一起完成的小事，\n也值得被认真放在这里。"}
-              </p>
-            </SoftCard>
-          ) : null}
-        </section>
-      ) : (
-        <SoftCard className="py-12 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#f6e6e3] text-2xl text-rose-deep">
-            ☆
-          </div>
-          <h2 className="mt-4 text-lg font-medium text-ink">
-            {filter === "全部" ? "这里还留着一些可能" : `还没有“${filter}”的愿望`}
-          </h2>
-          <p className="mt-2 text-sm text-ink-muted">
-            {filter === "全部"
-              ? "想到想一起做的事，就轻轻放在这里。"
-              : "愿望慢慢走到哪里都可以，不需要赶进度。"}
-          </p>
-          {filter === "全部" ? (
-            <button
-              type="button"
-              className="soft-button mt-6"
-              onClick={() => setIsOpen(true)}
-            >
-              记下一个愿望
-            </button>
-          ) : null}
-        </SoftCard>
-      )}
 
       <CreateWishModal
         open={isOpen}
@@ -133,17 +151,20 @@ export function WishesView({
 function WishCard({
   wish,
   index,
+  selected,
+  onSelect,
 }: {
   wish: WishListItem;
   index: number;
+  selected: boolean;
+  onSelect: () => void;
 }) {
   const progress = wish.totalSteps
     ? Math.round((wish.completedSteps / wish.totalSteps) * 100)
     : 0;
 
-  return (
-    <Link href={`/wishes/${wish.id}`} aria-label={`查看愿望：${wish.title}`}>
-      <SoftCard>
+  const content = (
+    <SoftCard className={selected ? "border border-[#dfb7b2] bg-[#fff9f7]" : ""}>
         <div className="flex items-start gap-4">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#f7e8e5] text-lg text-rose-deep">
             {String(index + 1).padStart(2, "0")}
@@ -174,8 +195,150 @@ function WishCard({
             </div>
           </div>
         </div>
+    </SoftCard>
+  );
+
+  return (
+    <>
+      <Link
+        href={`/wishes/${wish.id}`}
+        aria-label={`查看愿望：${wish.title}`}
+        className="book-mobile-only"
+      >
+        {content}
+      </Link>
+      <div
+        className="book-desktop-only w-full cursor-pointer text-left"
+        role="button"
+        tabIndex={0}
+        onClick={onSelect}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            onSelect();
+          }
+        }}
+      >
+        {content}
+      </div>
+    </>
+  );
+}
+
+function WishPreview({ wish }: { wish: WishListItem }) {
+  const progress = wish.totalSteps
+    ? Math.round((wish.completedSteps / wish.totalSteps) * 100)
+    : 0;
+
+  return (
+    <>
+      <header className="mb-6">
+        <p className="text-xs tracking-[0.2em] text-rose-deep">WISH DETAIL</p>
+        <div className="mt-3 flex items-start justify-between gap-3">
+          <h2 className="text-[27px] font-medium leading-tight text-ink">
+            {wish.title}
+          </h2>
+          <span className="paper-label shrink-0">{wish.status}</span>
+        </div>
+        {wish.description ? (
+          <p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-ink-muted">
+            {wish.description}
+          </p>
+        ) : null}
+        {wish.targetDate ? (
+          <p className="mt-3 text-xs text-ink-faint">
+            期待日期 · {formatDate(wish.targetDate)}
+          </p>
+        ) : null}
+      </header>
+
+      <SoftCard>
+        <div className="flex items-end justify-between">
+          <div>
+            <p className="text-sm font-medium text-ink">一起完成的小步骤</p>
+            <p className="mt-1 text-xs text-ink-muted">
+              {wish.completedSteps}/{wish.totalSteps} 已完成
+            </p>
+          </div>
+          <span className="text-lg font-medium text-rose-deep">{progress}%</span>
+        </div>
+        <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#efe6e3]">
+          <div
+            className="h-full rounded-full bg-[#dba39e]"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <div className="mt-6 grid gap-3">
+          {wish.steps.map((step) => (
+            <div
+              key={step.id}
+              className="flex items-center gap-3 rounded-[18px] bg-[#faf5f2] p-3"
+            >
+              <span
+                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border ${
+                  step.isDone
+                    ? "border-[#d59a94] bg-[#d59a94] text-white"
+                    : "border-[#d9c9c4] bg-white text-transparent"
+                }`}
+              >
+                ✓
+              </span>
+              <span
+                className={`text-sm leading-6 ${
+                  step.isDone ? "text-ink-faint line-through" : "text-ink-muted"
+                }`}
+              >
+                {step.content}
+              </span>
+            </div>
+          ))}
+          {!wish.steps.length ? (
+            <p className="py-6 text-center text-sm leading-6 text-ink-faint">
+              还没有拆成小步骤，先把愿望放在心里也很好。
+            </p>
+          ) : null}
+        </div>
+        <Link
+          href={`/wishes/${wish.id}`}
+          className="soft-button mt-6 w-full"
+        >
+          打开愿望并编辑
+        </Link>
       </SoftCard>
-    </Link>
+    </>
+  );
+}
+
+function WishEmptyState({
+  filter,
+  onCreate,
+}: {
+  filter: Filter;
+  onCreate: () => void;
+}) {
+  return (
+    <SoftCard className="py-12 text-center">
+      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#f6e6e3] text-2xl text-rose-deep">
+        ☆
+      </div>
+      <h2 className="mt-4 text-lg font-medium text-ink">
+        {filter === "全部" ? "这里还留着一些可能" : `还没有“${filter}”的愿望`}
+      </h2>
+      <p className="mt-2 text-sm text-ink-muted">
+        {filter === "全部"
+          ? "想到想一起做的事，就轻轻放在这里。"
+          : "愿望慢慢走到哪里都可以，不需要赶进度。"}
+      </p>
+      {filter === "全部" ? (
+        <button
+          type="button"
+          className="soft-button mt-6"
+          onClick={onCreate}
+        >
+          记下一个愿望
+        </button>
+      ) : null}
+    </SoftCard>
   );
 }
 

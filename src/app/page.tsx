@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SoftCard } from "@/components/soft-card";
+import { TabletBookLayout } from "@/components/tablet-book-layout";
 import {
   getDailyQuestionIndex,
   getQuestionDateKey,
@@ -135,46 +136,67 @@ export default async function Home() {
     : null;
 
   return (
-    <>
-      <header className="mb-7">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs tracking-[0.2em] text-rose-deep">
-              {formatToday(today)}
-            </p>
-            <h1 className="mt-3 text-[30px] font-medium tracking-[-0.04em] text-ink">
-              {daysTogether ? `在一起第 ${daysTogether} 天` : "今天也在这里"}
-            </h1>
-            <p className="mt-2 text-sm text-ink-muted">
-              有想留下的，就写一点。
-            </p>
-          </div>
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/70 text-xl text-rose-deep shadow-sm">
-            ♡
-          </div>
-        </div>
-      </header>
+    <TabletBookLayout
+      left={
+        <>
+          <header className="mb-7">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs tracking-[0.2em] text-rose-deep">
+                  {formatToday(today)}
+                </p>
+                <h1 className="mt-3 text-[30px] font-medium tracking-[-0.04em] text-ink">
+                  {daysTogether ? `在一起第 ${daysTogether} 天` : "今天也在这里"}
+                </h1>
+                <p className="mt-2 text-sm text-ink-muted">
+                  有想留下的，就写一点。
+                </p>
+              </div>
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/70 text-xl text-rose-deep shadow-sm">
+                ♡
+              </div>
+            </div>
+          </header>
 
-      <section className="grid gap-4">
-        <Link
-          href="/records?compose=1"
-          className="group flex min-h-[86px] items-center justify-between rounded-[26px] bg-gradient-to-br from-[#b77873] to-rose-deep px-5 text-white shadow-[0_18px_38px_rgb(169_104_101_/_30%)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_42px_rgb(169_104_101_/_34%)] active:translate-y-0 active:scale-[0.985] active:shadow-[0_8px_20px_rgb(169_104_101_/_18%)]"
-          aria-label="写下今天"
-        >
-          <div>
-            <p className="text-xl font-medium tracking-[-0.02em]">写下今天</p>
-            <p className="mt-1 text-xs text-white/70">
-              一句话，也可以好好留住此刻
-            </p>
+          <div className="book-desktop-only">
+            <TodayStatus
+              partnerId={partnerId}
+              myRecord={myRecord}
+              partnerRecord={partnerRecord}
+            />
+            <SoftCard className="mt-4 border border-white/70 bg-[#fbf5f1]">
+              <p className="text-xs tracking-[0.18em] text-rose-deep">
+                DAILY NOTE
+              </p>
+              <p className="mt-4 text-lg leading-8 text-ink">
+                “把寻常的一天写下来，它就有了被再次翻开的理由。”
+              </p>
+              <p className="mt-4 text-xs text-ink-faint">留给今天的一句话</p>
+            </SoftCard>
           </div>
-          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-xl transition group-active:translate-x-0.5">
-            →
-          </span>
-        </Link>
+        </>
+      }
+      right={
+        <section className="grid gap-4">
+          <Link
+            href="/records?compose=1"
+            className="group flex min-h-[86px] items-center justify-between rounded-[26px] bg-gradient-to-br from-[#b77873] to-rose-deep px-5 text-white shadow-[0_18px_38px_rgb(169_104_101_/_30%)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_42px_rgb(169_104_101_/_34%)] active:translate-y-0 active:scale-[0.985] active:shadow-[0_8px_20px_rgb(169_104_101_/_18%)]"
+            aria-label="写下今天"
+          >
+            <div>
+              <p className="text-xl font-medium tracking-[-0.02em]">写下今天</p>
+              <p className="mt-1 text-xs text-white/70">
+                一句话，也可以好好留住此刻
+              </p>
+            </div>
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-xl transition group-active:translate-x-0.5">
+              →
+            </span>
+          </Link>
 
-        {latestRecord ? (
-          <Link href="/records" aria-label="查看今日最新记录">
-            <SoftCard>
+          {latestRecord ? (
+            <Link href="/records" aria-label="查看今日最新记录">
+              <SoftCard>
               <div className="flex items-center justify-between">
                 <div className="flex min-w-0 items-center gap-2">
                   <Avatar profile={latestProfile} />
@@ -211,19 +233,19 @@ export default async function Home() {
                   {latestRecord.mood ? <span>☺ {latestRecord.mood}</span> : null}
                 </div>
               ) : null}
+              </SoftCard>
+            </Link>
+          ) : (
+            <SoftCard className="text-center">
+              <p className="text-sm font-medium text-ink">今天还没有新的记录</p>
+              <p className="mt-2 text-sm leading-6 text-ink-muted">
+                页面会在有人写下内容后，显示今天最新的一条。
+              </p>
             </SoftCard>
-          </Link>
-        ) : (
-          <SoftCard className="text-center">
-            <p className="text-sm font-medium text-ink">今天还没有新的记录</p>
-            <p className="mt-2 text-sm leading-6 text-ink-muted">
-              页面会在有人写下内容后，显示今天最新的一条。
-            </p>
-          </SoftCard>
-        )}
+          )}
 
-        <Link href="/questions" aria-label="查看今日问题">
-          <SoftCard className="border border-white/70 bg-[#f7e9e7]">
+          <Link href="/questions" aria-label="查看今日问题">
+            <SoftCard className="border border-white/70 bg-[#f7e9e7]">
             <div className="flex items-center justify-between">
               <p className="text-xs tracking-[0.18em] text-rose-deep">
                 今日问题
@@ -240,31 +262,53 @@ export default async function Home() {
                 ? "你的答案已经安静收好"
                 : "答案会在两个人都写下后一起出现"}
             </p>
-          </SoftCard>
-        </Link>
+            </SoftCard>
+          </Link>
 
-        <div className={partnerId ? "grid grid-cols-2 gap-3" : "grid"}>
-          <TodaySummaryCard
-            label="我的今天"
-            record={myRecord}
-            emptyText="还留着一小片空白"
-            composeLink
-          />
-          {partnerId ? (
-            <TodaySummaryCard
-              label="TA 的今天"
-              record={partnerRecord}
-              emptyText="今天还没有留下记录"
+          <div className="book-mobile-only">
+            <TodayStatus
+              partnerId={partnerId}
+              myRecord={myRecord}
+              partnerRecord={partnerRecord}
             />
-          ) : null}
-        </div>
+          </div>
+        </section>
+      }
+    />
+  );
+}
 
-        {!partnerId ? (
-          <p className="px-2 text-center text-sm leading-6 text-ink-muted">
-            这里还留着一个位置。
-          </p>
+function TodayStatus({
+  partnerId,
+  myRecord,
+  partnerRecord,
+}: {
+  partnerId?: string;
+  myRecord?: HomeRecord;
+  partnerRecord?: HomeRecord;
+}) {
+  return (
+    <>
+      <div className={partnerId ? "grid grid-cols-2 gap-3" : "grid"}>
+        <TodaySummaryCard
+          label="我的今天"
+          record={myRecord}
+          emptyText="还留着一小片空白"
+          composeLink
+        />
+        {partnerId ? (
+          <TodaySummaryCard
+            label="TA 的今天"
+            record={partnerRecord}
+            emptyText="今天还没有留下记录"
+          />
         ) : null}
-      </section>
+      </div>
+      {!partnerId ? (
+        <p className="mt-4 px-2 text-center text-sm leading-6 text-ink-muted">
+          这里还留着一个位置。
+        </p>
+      ) : null}
     </>
   );
 }

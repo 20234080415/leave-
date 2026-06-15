@@ -10,7 +10,12 @@ type WishRow = {
   status: WishListItem["status"];
   target_date: string | null;
   created_at: string;
-  wish_steps: { id: string; is_done: boolean }[];
+  wish_steps: {
+    id: string;
+    content: string;
+    is_done: boolean;
+    order_index: number;
+  }[];
 };
 
 export default async function WishesPage() {
@@ -35,7 +40,7 @@ export default async function WishesPage() {
   const { data, error } = await supabase
     .from("wishes")
     .select(
-      "id, title, description, status, target_date, created_at, wish_steps(id, is_done)",
+      "id, title, description, status, target_date, created_at, wish_steps(id, content, is_done, order_index)",
     )
     .eq("space_id", membership.space_id)
     .order("created_at", { ascending: false });
@@ -48,6 +53,14 @@ export default async function WishesPage() {
     targetDate: wish.target_date,
     completedSteps: wish.wish_steps.filter((step) => step.is_done).length,
     totalSteps: wish.wish_steps.length,
+    steps: [...wish.wish_steps]
+      .sort((a, b) => a.order_index - b.order_index)
+      .map((step) => ({
+        id: step.id,
+        content: step.content,
+        isDone: step.is_done,
+        orderIndex: step.order_index,
+      })),
   }));
 
   return (

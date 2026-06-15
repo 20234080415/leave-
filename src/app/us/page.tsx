@@ -4,6 +4,7 @@ import { InstallAppCard } from "@/components/install-app-card";
 import { InviteCodeCard } from "@/components/invite-code-card";
 import { PageHeader } from "@/components/page-header";
 import { SoftCard } from "@/components/soft-card";
+import { TabletBookLayout } from "@/components/tablet-book-layout";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionRefreshPath } from "@/lib/supabase/session";
 
@@ -84,81 +85,88 @@ export default async function UsPage() {
   const daysTogether = differenceInDays(space.created_at, new Date()) + 1;
 
   return (
-    <>
-      <PageHeader
-        eyebrow="US, TOGETHER"
-        title={space.name}
-        description="两个人的小小空间，只收藏彼此的日常。"
-      />
-
-      <SoftCard className="relative overflow-hidden bg-gradient-to-br from-[#f8e4e1] to-[#fff8f3] py-8 text-center">
-        <div className="absolute -right-8 -top-10 h-28 w-28 rounded-full bg-white/35" />
-        <div className="flex items-start justify-center">
-          <ProfileAvatar
-            profile={orderedProfiles[0]}
-            fallbackName="等待你"
-            color="#dba9a4"
+    <TabletBookLayout
+      left={
+        <>
+          <PageHeader
+            eyebrow="US, TOGETHER"
+            title={space.name}
+            description="两个人的小小空间，只收藏彼此的日常。"
           />
-          <span className="-mx-2 mt-7 flex h-9 w-9 items-center justify-center rounded-full bg-white text-rose-deep shadow-sm">
-            ♡
-          </span>
-          <ProfileAvatar
-            profile={orderedProfiles[1]}
-            fallbackName="等待对方"
-            color="#cbb1a7"
+
+          <SoftCard className="relative overflow-hidden bg-gradient-to-br from-[#f8e4e1] to-[#fff8f3] py-8 text-center">
+            <div className="absolute -right-8 -top-10 h-28 w-28 rounded-full bg-white/35" />
+            <div className="flex items-start justify-center">
+              <ProfileAvatar
+                profile={orderedProfiles[0]}
+                fallbackName="等待你"
+                color="#dba9a4"
+              />
+              <span className="-mx-2 mt-7 flex h-9 w-9 items-center justify-center rounded-full bg-white text-rose-deep shadow-sm">
+                ♡
+              </span>
+              <ProfileAvatar
+                profile={orderedProfiles[1]}
+                fallbackName="等待对方"
+                color="#cbb1a7"
+              />
+            </div>
+            <p className="mt-6 text-sm text-ink-muted">
+              空间创建于 {formatDate(space.created_at)}
+            </p>
+            <p className="mt-2 text-2xl font-medium text-ink">
+              一起走过 {daysTogether} 天
+            </p>
+          </SoftCard>
+        </>
+      }
+      right={
+        <>
+          <SoftCard className="text-center">
+            <p className="text-xs tracking-[0.16em] text-rose-deep">OUR SPACE</p>
+            <h2 className="mt-3 text-lg font-medium text-ink">
+              {hasPartner ? "两个人已经在这里相遇" : "这里还留着一个位置"}
+            </h2>
+            <p className="mx-auto mt-3 max-w-[280px] text-sm leading-6 text-ink-muted">
+              {hasPartner
+                ? "记录不要求回应，只把想留下的日常放在这里。"
+                : "不着急。准备好时，把下方邀请码交给想一起留在这里的人。"}
+            </p>
+          </SoftCard>
+
+          <section className="mt-4 grid grid-cols-3 gap-3">
+            <StatCard
+              value={formatCount(recordCountResult.count, recordCountResult.error)}
+              label="留下的记录"
+            />
+            <StatCard
+              value={formatCount(wishCountResult.count, wishCountResult.error)}
+              label="一起的愿望"
+            />
+            <StatCard
+              value={formatCount(answerCountResult.count, answerCountResult.error)}
+              label="相遇的答案"
+            />
+          </section>
+
+          <InviteCodeCard
+            inviteCode={space.invite_code}
+            hasPartner={hasPartner}
           />
-        </div>
-        <p className="mt-6 text-sm text-ink-muted">
-          空间创建于 {formatDate(space.created_at)}
-        </p>
-        <p className="mt-2 text-2xl font-medium text-ink">
-          一起走过 {daysTogether} 天
-        </p>
-      </SoftCard>
 
-      <SoftCard className="mt-4 text-center">
-        <p className="text-xs tracking-[0.16em] text-rose-deep">OUR SPACE</p>
-        <h2 className="mt-3 text-lg font-medium text-ink">
-          {hasPartner ? "两个人已经在这里相遇" : "这里还留着一个位置"}
-        </h2>
-        <p className="mx-auto mt-3 max-w-[280px] text-sm leading-6 text-ink-muted">
-          {hasPartner
-            ? "记录不要求回应，只把想留下的日常放在这里。"
-            : "不着急。准备好时，把下方邀请码交给想一起留在这里的人。"}
-        </p>
-      </SoftCard>
+          <InstallAppCard />
 
-      <section className="mt-4 grid grid-cols-3 gap-3">
-        <StatCard
-          value={formatCount(recordCountResult.count, recordCountResult.error)}
-          label="留下的记录"
-        />
-        <StatCard
-          value={formatCount(wishCountResult.count, wishCountResult.error)}
-          label="一起的愿望"
-        />
-        <StatCard
-          value={formatCount(answerCountResult.count, answerCountResult.error)}
-          label="相遇的答案"
-        />
-      </section>
-
-      <InviteCodeCard
-        inviteCode={space.invite_code}
-        hasPartner={hasPartner}
-      />
-
-      <InstallAppCard />
-
-      <AccountSettings
-        userId={userId}
-        nickname={currentProfile?.nickname ?? "留白用户"}
-        spaceId={space.id}
-        spaceName={space.name}
-        hasPartner={hasPartner}
-        canEditSpace={space.created_by === userId}
-      />
-    </>
+          <AccountSettings
+            userId={userId}
+            nickname={currentProfile?.nickname ?? "留白用户"}
+            spaceId={space.id}
+            spaceName={space.name}
+            hasPartner={hasPartner}
+            canEditSpace={space.created_by === userId}
+          />
+        </>
+      }
+    />
   );
 }
 

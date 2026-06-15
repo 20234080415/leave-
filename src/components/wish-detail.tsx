@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { SheetModal } from "@/components/sheet-modal";
 import { SoftCard } from "@/components/soft-card";
+import { TabletBookLayout } from "@/components/tablet-book-layout";
 import { createClient } from "@/lib/supabase/client";
 import type { WishStatus } from "@/components/wishes-view";
 
@@ -188,11 +189,40 @@ export function WishDetail({ wish }: { wish: WishDetailData }) {
   }
 
   return (
-    <>
-      <header className="mb-6">
+    <TabletBookLayout
+      left={
+        <div className="book-desktop-only">
+          <Link
+            href="/wishes"
+            className="inline-flex items-center gap-1 text-sm text-ink-muted"
+          >
+            ← 返回愿望清单
+          </Link>
+          <div className="mt-10 text-center">
+            <span className="paper-label">{status}</span>
+            <h1 className="mt-5 text-[30px] font-medium leading-tight tracking-[-0.03em] text-ink">
+              {wish.title}
+            </h1>
+            {wish.description ? (
+              <p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-ink-muted">
+                {wish.description}
+              </p>
+            ) : null}
+            <div className="mx-auto mt-8 flex h-28 w-28 items-center justify-center rounded-full bg-[#f7e8e5] text-2xl font-medium text-rose-deep">
+              {progress}%
+            </div>
+            <p className="mt-4 text-sm text-ink-muted">
+              {completedSteps}/{steps.length} 个小步骤已经完成
+            </p>
+          </div>
+        </div>
+      }
+      right={
+        <>
+          <header className="mb-6">
         <Link
           href="/wishes"
-          className="inline-flex items-center gap-1 text-sm text-ink-muted"
+          className="book-mobile-only inline-flex items-center gap-1 text-sm text-ink-muted"
         >
           ← 返回愿望清单
         </Link>
@@ -455,16 +485,18 @@ export function WishDetail({ wish }: { wish: WishDetailData }) {
         }}
       />
 
-      <ConfirmDialog
-        open={deleteWishOpen}
-        title="确定要删掉这个愿望吗？"
-        description="愿望和里面的小步骤都会一起离开，删掉后不会恢复。"
-        confirmLabel="删除"
-        pending={pendingId === "delete-wish"}
-        onClose={() => setDeleteWishOpen(false)}
-        onConfirm={() => void deleteWish()}
-      />
-    </>
+          <ConfirmDialog
+            open={deleteWishOpen}
+            title="确定要删掉这个愿望吗？"
+            description="愿望和里面的小步骤都会一起离开，删掉后不会恢复。"
+            confirmLabel="删除"
+            pending={pendingId === "delete-wish"}
+            onClose={() => setDeleteWishOpen(false)}
+            onConfirm={() => void deleteWish()}
+          />
+        </>
+      }
+    />
   );
 }
 
