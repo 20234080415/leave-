@@ -86,6 +86,7 @@ export default async function UsPage() {
 
   return (
     <TabletBookLayout
+      className="us-page-layout"
       left={
         <>
           <PageHeader
@@ -119,7 +120,7 @@ export default async function UsPage() {
             </p>
           </SoftCard>
 
-          <section className="mt-4 grid grid-cols-3 gap-3">
+          <section className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
             <StatCard
               value={formatCount(recordCountResult.count, recordCountResult.error)}
               label="留下的记录"
@@ -217,9 +218,11 @@ function ProfileAvatar({
 
 function StatCard({ value, label }: { value: string; label: string }) {
   return (
-    <SoftCard className="px-2 py-4 text-center shadow-none">
+    <SoftCard className="min-w-0 px-1 py-4 text-center shadow-none sm:px-2">
       <p className="text-base font-medium text-ink-muted">{value}</p>
-      <p className="mt-1 text-[11px] text-ink-muted">{label}</p>
+      <p className="mt-1 break-words text-[10px] leading-4 text-ink-muted sm:text-[11px]">
+        {label}
+      </p>
     </SoftCard>
   );
 }
