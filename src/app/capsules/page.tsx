@@ -1,8 +1,6 @@
 import { redirect } from "next/navigation";
-import {
-  CapsulesView,
-  type TimeCapsuleItem,
-} from "@/components/capsules-view";
+import { type TimeCapsuleItem } from "@/components/capsule-card";
+import { CapsulesView } from "@/components/capsules-view";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionRefreshPath } from "@/lib/supabase/session";
 
@@ -21,7 +19,12 @@ type ProfileRow = {
   nickname: string;
 };
 
-export default async function CapsulesPage() {
+export default async function CapsulesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ compose?: string; view?: string }>;
+}) {
+  const { compose, view } = await searchParams;
   const supabase = await createClient();
   const { data: authData } = await supabase.auth.getClaims();
   const userId = authData?.claims.sub;
@@ -100,9 +103,14 @@ export default async function CapsulesPage() {
 
   return (
     <CapsulesView
+      key={`${compose ?? "closed"}-${view ?? "all"}`}
       capsules={capsules}
       userId={userId}
       spaceId={membership.space_id}
+      initialComposerOpen={compose === "1"}
+      initialView={
+        view === "mine" || view === "opened" ? view : "all"
+      }
       loadError={
         error
           ? "时间胶囊还在准备中，请先应用最新的 Supabase migration。"

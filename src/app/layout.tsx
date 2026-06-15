@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { BottomNav } from "@/components/bottom-nav";
+import { CapsuleFloatingButton } from "@/components/capsule-floating-button";
 import { PwaRegistration } from "@/components/pwa-registration";
 import "./globals.css";
 
@@ -67,6 +68,7 @@ export default function RootLayout({
       <body>
         <div className="app-shell">
           <main className="page-content">{children}</main>
+          <CapsuleFloatingButton />
           <BottomNav />
         </div>
         <PwaRegistration />

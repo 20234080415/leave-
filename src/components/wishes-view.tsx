@@ -118,6 +118,35 @@ export function WishesView({
             ) : (
               <WishEmptyState filter={filter} onCreate={() => setIsOpen(true)} />
             )}
+
+            <Link
+              href="/capsules?compose=1"
+              className="group mt-5 block"
+              aria-label="创建时间胶囊"
+            >
+              <SoftCard className="relative overflow-hidden border border-[#efd7d2] bg-gradient-to-br from-[#fff9f6] via-[#f9ebe8] to-[#fffdfb]">
+                <span className="absolute -right-10 -top-12 h-32 w-32 rounded-full bg-white/45" />
+                <div className="relative flex items-center justify-between gap-5">
+                  <div>
+                    <p className="text-xs tracking-[0.18em] text-rose-deep">
+                      FOR THE FUTURE
+                    </p>
+                    <h2 className="mt-3 text-xl font-medium text-ink">
+                      时间胶囊
+                    </h2>
+                    <p className="mt-2 whitespace-pre-line text-sm leading-7 text-ink-muted">
+                      {"把今天的话，\n留给未来的某一天。"}
+                    </p>
+                    <span className="mt-5 inline-flex min-h-10 items-center rounded-2xl bg-[#ad6b67] px-4 text-sm font-medium text-white shadow-[0_8px_18px_rgb(169_104_101_/_18%)]">
+                      创建胶囊
+                    </span>
+                  </div>
+                  <span className="capsule-entry-art" aria-hidden="true">
+                    <span className="capsule-entry-art__heart">♥</span>
+                  </span>
+                </div>
+              </SoftCard>
+            </Link>
           </>
         }
         right={

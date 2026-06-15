@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AccountSettings } from "@/components/account-settings";
 import { InstallAppCard } from "@/components/install-app-card";
@@ -161,27 +160,6 @@ export default async function UsPage() {
                 : "不着急。准备好时，把下方邀请码交给想一起留在这里的人。"}
             </p>
           </SoftCard>
-
-          <Link href="/capsules" aria-label="打开时间胶囊">
-            <SoftCard className="group mt-4 overflow-hidden border border-white/70 bg-gradient-to-br from-[#f7e6e3] to-[#fff9f5]">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-xs tracking-[0.16em] text-rose-deep">
-                    FOR THE FUTURE
-                  </p>
-                  <h2 className="mt-3 text-lg font-medium text-ink">
-                    时间胶囊
-                  </h2>
-                  <p className="mt-2 text-sm leading-6 text-ink-muted">
-                    把今天的话，留给未来的我们。
-                  </p>
-                </div>
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/75 text-lg text-rose-deep shadow-sm transition group-active:translate-x-0.5">
-                  →
-                </span>
-              </div>
-            </SoftCard>
-          </Link>
 
           <InviteCodeCard
             inviteCode={space.invite_code}
