@@ -8,6 +8,7 @@
   --faint: #aa9d99;
   --rose: #d99791;
   --rose-deep: #a96865;
+  --app-content-width: 430px;
 }
 
 @theme inline {
@@ -83,7 +84,7 @@ button {
 
 .app-shell {
   width: 100%;
-  max-width: 430px;
+  max-width: var(--app-content-width);
   min-height: 100vh;
   min-height: 100dvh;
   margin: 0 auto;
@@ -94,7 +95,7 @@ button {
 
 .page-content {
   width: 100%;
-  max-width: 430px;
+  max-width: var(--app-content-width);
   min-height: 100vh;
   min-height: 100dvh;
   margin: 0 auto;
@@ -225,7 +226,7 @@ button {
 .sheet-panel {
   position: relative;
   width: 100%;
-  max-width: 430px;
+  max-width: var(--app-content-width);
   max-height: min(88vh, 760px);
   overflow-y: auto;
   border-radius: 30px 30px 0 0;
@@ -254,7 +255,7 @@ button {
   bottom: 0;
   left: 0;
   width: 100%;
-  max-width: 430px;
+  max-width: var(--app-content-width);
   margin: 0 auto;
   padding: 6px 10px calc(6px + env(safe-area-inset-bottom));
   border-top: 1px solid rgb(215 194 188 / 45%);
@@ -265,7 +266,7 @@ button {
 
 .bottom-nav__inner {
   display: grid;
-  max-width: 430px;
+  max-width: var(--app-content-width);
   margin: 0 auto;
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
@@ -315,8 +316,27 @@ button {
   background: #f5e2df;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 768px) and (max-width: 1024px) {
+  :root {
+    --app-content-width: 600px;
+  }
+
   .app-shell {
-    box-shadow: 0 0 70px rgb(95 67 60 / 10%);
+    box-shadow: 0 0 70px rgb(95 67 60 / 8%);
+  }
+}
+
+@media (min-width: 1025px) {
+  body {
+    background:
+      radial-gradient(circle at 18% 14%, rgb(235 210 204 / 38%), transparent 28%),
+      radial-gradient(circle at 82% 78%, rgb(239 220 212 / 36%), transparent 30%),
+      linear-gradient(135deg, #f5eeea 0%, #fbf7f4 50%, #f2e9e5 100%);
+  }
+
+  .app-shell {
+    box-shadow:
+      0 0 0 1px rgb(190 159 151 / 10%),
+      0 24px 80px rgb(95 67 60 / 13%);
   }
 }
